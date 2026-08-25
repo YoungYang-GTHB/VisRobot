@@ -20,4 +20,4 @@ The published site is built from [`site/`](site/). Pushes to `main` are deployed
 
 **VisRobot — a deepdive_kai project**
 
-Task A refers to garment flatten-and-fold. Task N refers to nail-art manipulation. Public claims retain their evidence status and protocol boundaries.
+Public task names are written in full: garment flatten-and-fold and nail-art manipulation. Internal task codes are intentionally omitted from the public narrative. All claims retain their evidence status and protocol boundaries.

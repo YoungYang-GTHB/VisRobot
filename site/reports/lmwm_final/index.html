@@ -146,8 +146,8 @@
 
   <figure>
     <video controls playsinline preload="none" muted loop>
-      <source src="assets/neural_pred_decode_task_a.mp4" type="video/mp4">
-      浏览器无法内嵌播放,<a href="assets/neural_pred_decode_task_a.mp4">点此下载视频</a>。
+      <source src="assets/neural_pred_decode_garment_folding.mp4" type="video/mp4">
+      浏览器无法内嵌播放,<a href="assets/neural_pred_decode_garment_folding.mp4">点此下载视频</a>。
     </video>
     <figcaption><b>神经预测器闭环可视化(统一 DINOv3-base)</b> · 三栏 = 当前帧 │ <b>神经预测</b> m+1(生成器输出解码)│ 真实下一 stage 代表帧(同管线 encode→decode)。全在 DINOv3-base 单空间 → 预测直接可解码,可比"预测像不像真实下一 milestone 代表帧"。</figcaption>
   </figure>
@@ -404,8 +404,8 @@
     <p class="sub" style="margin-top:4px">因预测器/生成器与解码器同在 DINOv3-base 空间,<b>神经预测结果可直接解码回帧</b>(若预测器与解码器分处两个空间则无法闭环)。这是统一单空间的独有价值。</p>
     <div class="vids">
       <figure><video controls playsinline preload="none" muted loop>
-          <source src="assets/neural_pred_decode_task_a.mp4" type="video/mp4">
-          浏览器无法内嵌播放,<a href="assets/neural_pred_decode_task_a.mp4">点此下载视频</a>。
+          <source src="assets/neural_pred_decode_garment_folding.mp4" type="video/mp4">
+          浏览器无法内嵌播放,<a href="assets/neural_pred_decode_garment_folding.mp4">点此下载视频</a>。
         </video>
         <figcaption><b>神经预测器闭环</b> · 三栏 = 当前帧 │ <b>神经预测 m+1</b>(生成器 <code>fwd(G_t, ẑ)</code> 解码)│ 真实下一 stage 代表帧。右栏 = 训练用的 next-seg medoid(Viterbi 分段,与 <code>build_pairs_abl</code> 一致),经<b>同一</b> encode→decode;两栏同管线 → 差异纯是预测质量。预测前瞻下一态(如青布展开)、颜色与本 episode 一致。</figcaption></figure>
       <figure><video controls playsinline preload="none" muted loop>
@@ -509,8 +509,8 @@
     <p class="ref">⚠️ <b>deploy/persist 绝对值跨空间不可直接比</b>:SigLIP 1152D raw vs DINOv3-base 768D <b>每 patch L2 归一</b>,grid-cos 几何尺度不同 → DINO deploy 略高有一部分是"空间/归一化差异",非纯预测优劣。lift/id3/vfwd 较可比。</p>
     <div class="keybox"><p><b>结论:两编码空间 LMWM 预测质量相当,无"明显更好"。</b> ① <b>lift(去持恒基线,较可比)SigLIP 反而略高</b>(kai0 0.092&gt;0.084、coffee 0.031&gt;0.021),<b>id3 打平</b>(0.944 vs 0.940),vfwd 混合。② 最终版选 DINOv3-base <b>不是因为预测更好,而是用途分工</b>:关键差异在<b>解码可视化的锐度</b>——两空间<b>都有 grid 解码器可闭环</b>,但 <b>DINOv3-base 解码锐利</b>(重建式特征,布形/褶皱可辨)、<b>SigLIP 解码明显更糊</b>(对比学习特征,重建力弱,见下图);加上 DINOv3-base 用已缓存特征、不需 SigLIP 权重。而 <b>SigLIP 版的价值在未来 VLA 融合</b>——它就是 π0.5 的塔,可同塔复用 KV(§04),子目标即策略消费空间。对应产物保留在内部证据归档中。</p></div>
     <figure><video controls playsinline preload="none" muted loop>
-        <source src="assets/siglip_neural_pred_task_a.mp4" type="video/mp4">
-        浏览器无法内嵌播放,<a href="assets/siglip_neural_pred_task_a.mp4">点此下载视频</a>。
+        <source src="assets/siglip_neural_pred_garment_folding.mp4" type="video/mp4">
+        浏览器无法内嵌播放,<a href="assets/siglip_neural_pred_garment_folding.mp4">点此下载视频</a>。
       </video>
       <figcaption><b>SigLIP 空间闭环可视化</b>(与 §2.3 DINOv3-base 图对照)· 四栏 = 当前帧 │ <b>神经预测 m+1</b>(SigLIP 生成器输出→SigLIP 解码)│ 真实 m+1 medoid(SigLIP encode→decode)│ 真实 m+1 帧。<b>中间两栏共用同一 SigLIP 解码器 → 隔离"预测质量" vs "解码质量"</b>:两栏长得像 = 预测是对的;但都<b>明显比 §2.3 的 DINOv3-base 糊</b>(SigLIP 对比学习、非重建式,布形软、有栅格伪影)—— 这正是最终版选 DINOv3-base 做闭环的原因(解码锐度),而非"SigLIP 不能闭环"。</figcaption></figure>
   </section>

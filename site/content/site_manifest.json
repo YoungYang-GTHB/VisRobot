@@ -1,0 +1,357 @@
+{
+  "schema_version": 2,
+  "updated": "2026-08-25",
+  "hero_metrics": [
+    {
+      "value": "≈100%",
+      "label_zh": "衣物展平—折叠任务（Task A）自主成功率",
+      "label_en": "Garment flatten-and-fold task (Task A) autonomous success",
+      "detail_zh": "用户报告；正式 X/N 与置信区间待冻结",
+      "detail_en": "User-reported; frozen X/N and confidence interval pending",
+      "status": "USER-REPORTED",
+      "status_zh": "用户报告",
+      "status_en": "USER-REPORTED"
+    },
+    {
+      "value": "3,055",
+      "label_zh": "衣物展平—折叠任务历史轨迹",
+      "label_en": "Historical garment flatten-and-fold trajectories",
+      "detail_zh": "3,362,369 个特征/标签帧",
+      "detail_en": "3,362,369 feature/label frames",
+      "status": "VERIFIED-L2",
+      "status_zh": "产物核验",
+      "status_en": "ARTIFACT-VERIFIED"
+    },
+    {
+      "value": "32.05 ms",
+      "label_zh": "模型前向中位数（P50）",
+      "label_en": "Median model forward time (P50)",
+      "detail_zh": "RTX 5090 · Triton GPU 推理 · 非端到端延迟",
+      "detail_en": "RTX 5090 · Triton GPU inference · not end-to-end latency",
+      "status": "VERIFIED-L2",
+      "status_zh": "产物核验",
+      "status_en": "ARTIFACT-VERIFIED"
+    },
+    {
+      "value": "−81%",
+      "label_zh": "末端执行器静止抖动",
+      "label_en": "Idle end-effector jiggle",
+      "detail_zh": "3.33 → 0.63 mm；记录 setup",
+      "detail_en": "3.33 → 0.63 mm on the recorded setup",
+      "status": "VERIFIED-L3",
+      "status_zh": "真机记录核验",
+      "status_en": "ROBOT-TRACE-VERIFIED"
+    }
+  ],
+  "system_stages": [
+    {
+      "id": "garment_data",
+      "index": "01",
+      "name_zh": "衣物数据引擎",
+      "name_en": "Garment Data Engine",
+      "summary_zh": "多视角双臂采集、静态处理、初态覆盖、质量过滤、数据集聚合（DAgger）与可追溯数据谱系",
+      "summary_en": "Multi-view bimanual capture, static processing, initial-state coverage, quality filtering, DAgger and traceable lineage",
+      "tone": "data"
+    },
+    {
+      "id": "folding_policy",
+      "index": "02",
+      "name_zh": "双臂策略学习",
+      "name_en": "Bimanual Policy Learning",
+      "summary_zh": "Physical Intelligence π0/π0.5 策略主线、动作分块、跨日期门禁和训练—部署一致性",
+      "summary_en": "Physical Intelligence π0/π0.5 policy mainline, action chunks, cross-date gates and train-deploy parity",
+      "tone": "learning"
+    },
+    {
+      "id": "physical_execution",
+      "index": "03",
+      "name_zh": "物理执行系统",
+      "name_en": "Physical Execution",
+      "summary_zh": "双 Piper 机械臂、ROS 2、Triton GPU 推理、实时动作分块（RTC）、动作语义后处理、稳定性与安全",
+      "summary_en": "Dual Piper arms, ROS 2, Triton GPU inference, Real-Time Chunking (RTC), action-semantic post-processing, stability and safety",
+      "tone": "deploy"
+    },
+    {
+      "id": "failure_loop",
+      "index": "04",
+      "name_zh": "失效反馈与迭代",
+      "name_en": "Failure Analysis & Iteration",
+      "summary_zh": "任务结果、接管、阶段失败、恢复片段与定向补采共同驱动下一轮",
+      "summary_en": "Outcomes, interventions, stage failures, recovery segments and targeted recollection drive the next cycle",
+      "tone": "evidence"
+    }
+  ],
+  "learning_tracks": [
+    {
+      "id": "state",
+      "name_zh": "01 · 衣物状态",
+      "name_en": "01 · Garment State",
+      "eyebrow": "DEFORMABLE STATE · PARTIAL OBSERVABILITY",
+      "title_zh": "面向可变形衣物的多视角状态表征与观测可靠性",
+      "title_en": "Multi-view state representation and observation reliability for deformable garments",
+      "body_zh": "状态表征同时考虑图像有效性、相机角色、跨日期分布和衣物初态覆盖。修复黑图回退路径后，采用 xyz 位置、六维旋转编码与夹爪状态的统一末端动作表示（EE6D），其单步平均绝对误差（MAE@1）从 0.0654 降至 0.0305；该结果属于离线诊断，仍需独立真机门禁。",
+      "body_en": "State representation is evaluated together with image validity, camera roles, cross-date distributions and garment initial-state coverage. Fixing the black-frame fallback reduced one-step Mean Absolute Error for the unified end-effector action representation (EE6D: xyz position, 6D rotation encoding and gripper state) from 0.0654 to 0.0305; this remains an offline diagnostic subject to an independent robot gate.",
+      "metrics_zh": [
+        "3 个主要视角",
+        "相机修复 · 0.0654 → 0.0305",
+        "跨日期差距 · 3.2×"
+      ],
+      "metrics_en": [
+        "3 primary views",
+        "camera fix · 0.0654 → 0.0305",
+        "cross-date gap · 3.2×"
+      ]
+    },
+    {
+      "id": "policy",
+      "name_zh": "02 · 双臂策略",
+      "name_en": "02 · Bimanual Policy",
+      "eyebrow": "LONG-HORIZON · CONTACT-RICH CONTROL",
+      "title_zh": "面向长时接触操作的双臂策略学习与误差传播控制",
+      "title_en": "Bimanual policy learning and error-propagation control for long-horizon contact manipulation",
+      "body_zh": "Physical Intelligence π0/π0.5 构成当前生产策略主线。模型检查点元数据、归一化统计、来源/日期划分、动作分块与部署一致性共同定义发布版本；同分布验证集的平均绝对误差仅作为离线指标，不替代真机选择。",
+      "body_en": "Physical Intelligence π0/π0.5 constitutes the production-policy mainline. Checkpoint metadata, normalization statistics, source/date splits, action chunks and deployment consistency jointly define a release; held-in Mean Absolute Error remains an offline metric rather than a substitute for robot selection.",
+      "metrics_zh": [
+        "衣物展平—折叠任务 · 3,055 条轨迹",
+        "离散余弦变换辅助损失 · 反转率 −14.6%",
+        "动作分块接缝代理指标 · −6.4%"
+      ],
+      "metrics_en": [
+        "garment flatten-and-fold · 3,055 episodes",
+        "DCT auxiliary loss · reversals −14.6%",
+        "chunk-seam proxy · −6.4%"
+      ]
+    },
+    {
+      "id": "progress",
+      "name_zh": "03 · 进度与恢复",
+      "name_en": "03 · Progress & Recovery",
+      "eyebrow": "STAGE · PROGRESS · FAILURE",
+      "title_zh": "面向任务推进的阶段表征、偏离检测与恢复决策",
+      "title_en": "Stage representation, deviation detection and recovery decisions for task progression",
+      "body_zh": "结果契约记录阶段结果、人工接管、恢复行为和安全事件。跨轨迹复现价值估计（CRAVE）与离线强化学习用于研究进度感知后训练；其规范证据目前来自美甲操作任务（Task N），不作为衣物展平—折叠任务（Task A）旗舰结果的因果解释。",
+      "body_en": "The outcome contract records stage outcomes, human interventions, recovery behaviors and safety events. Cross-episode Recurrence As Value Estimation (CRAVE) and offline reinforcement learning study progress-aware post-training; their canonical evidence currently comes from nail-art manipulation (Task N) and is not used as a causal explanation for the garment flatten-and-fold result (Task A).",
+      "metrics_zh": [
+        "结果契约 · 4 类终止状态",
+        "CRAVE 真机增益 · 待验证",
+        "失效/分布外检测头 · 下一步"
+      ],
+      "metrics_en": [
+        "outcome contract · 4 terminal states",
+        "CRAVE robot gain · pending",
+        "failure/OOD head · next"
+      ]
+    },
+    {
+      "id": "motion",
+      "name_zh": "04 · 物理动作",
+      "name_en": "04 · Physical Motion",
+      "eyebrow": "REAL-TIME · STABILITY · SAFETY",
+      "title_zh": "从策略输出到受约束双臂运动的实时执行",
+      "title_en": "Real-time execution from policy output to constrained bimanual motion",
+      "body_zh": "原始策略动作、实际发送指令与机器人实测状态分层记录；模型前向延迟、控制周期吞吐、观测年龄、动作分块接缝、夹爪语义和安全门禁分别归因。控制稳定性采用位移、加加速度、反转率和频域指标量化。",
+      "body_en": "Raw actions, emitted commands and measured states are logged by layer. Forward latency, cycle throughput, sensor age, chunk seams, gripper semantics and safety gates are attributed independently, while stability is quantified through displacement, jerk, reversal rate and spectral metrics.",
+      "metrics_zh": [
+        "前向中位数（P50）· 32.05 ms",
+        "静止抖动 · −81%",
+        "每秒反转次数 · −91%"
+      ],
+      "metrics_en": [
+        "forward P50 · 32.05 ms",
+        "idle jiggle · −81%",
+        "reversals/s · −91%"
+      ]
+    }
+  ],
+  "other_work": [
+    {
+      "id": "posttraining",
+      "kicker": "PROGRESS-AWARE LEARNING",
+      "title_zh": "CRAVE：美甲操作任务的进度建模与离线强化学习",
+      "title_en": "CRAVE: progress modeling and offline reinforcement learning for nail-art manipulation",
+      "body_zh": "在美甲操作任务（Task N）中，从终局标签展开阶段、进度与后训练信号；教师模型的排序结构获得支持，但真机策略增益仍待同条件对照试验。",
+      "body_en": "For nail-art manipulation (Task N), terminal labels are expanded into stage, progress and post-training signals. Teacher-model ordering is supported; matched robot-policy gains remain pending.",
+      "metric_zh": "验证集相关系数 · 0.978662 · 真机增益待验证",
+      "metric_en": "validation correlation · 0.978662 · robot gain pending",
+      "status": "RESEARCH",
+      "status_zh": "研究进行中",
+      "status_en": "RESEARCH",
+      "href": "reports/crave_report/"
+    },
+    {
+      "id": "worldmodels",
+      "kicker": "PREDICTIVE LEARNING",
+      "title_zh": "预测表征与控制效用",
+      "title_en": "Predictive Representations & Control Utility",
+      "body_zh": "评估显式未来、潜在里程碑和残差引导对策略决策的可验证贡献；当前潜在里程碑世界模型（LMWM）残差变体仍低于无世界模型基线。",
+      "body_en": "Evaluate the verifiable contribution of explicit futures, latent milestones and residual guidance to policy decisions; the current Latent Milestone World Model (LMWM) residual variant remains below the no-world-model baseline.",
+      "metric_zh": "LMWM 残差变体 96.90 < 无世界模型基线 97.24",
+      "metric_en": "LMWM residual 96.90 < no-world-model 97.24",
+      "status": "INCONCLUSIVE",
+      "status_zh": "证据不足",
+      "status_en": "INCONCLUSIVE",
+      "href": "reports/lmwm_final/"
+    },
+    {
+      "id": "generalization",
+      "kicker": "GENERALIZATION",
+      "title_zh": "跨本体与标准基准",
+      "title_en": "Cross-Embodiment & Benchmarks",
+      "body_zh": "X-VLA、统一末端动作表示（EE6D：xyz 位置、六维旋转编码与夹爪状态）、LIBERO 模拟基准与 RoboTwin 双臂模拟基准共同构成跨平台动作表示、视觉依赖和统一评测管线研究。",
+      "body_en": "X-VLA, the unified end-effector action representation (EE6D: xyz position, 6D rotation encoding and gripper state), the LIBERO simulation benchmark and the RoboTwin bimanual simulation benchmark support research on cross-platform actions, visual dependence and a shared evaluation pipeline.",
+      "metric_zh": "RoboTwin 统一评测管线 · 941/1,200",
+      "metric_en": "RoboTwin shared evaluation pipeline · 941/1,200",
+      "status": "VERIFIED-L2",
+      "status_zh": "产物核验",
+      "status_en": "ARTIFACT-VERIFIED",
+      "href": "#other-work"
+    },
+    {
+      "id": "continual",
+      "kicker": "CONTINUAL ROBOT LEARNING",
+      "title_zh": "持续学习中的任务获取与能力保持",
+      "title_en": "Task Acquisition & Capability Retention",
+      "body_zh": "衣物展平—折叠任务（Task A）到美甲操作任务（Task N）的回放训练、联合训练与能力保持门禁形成双任务帕累托权衡；离线最优仍未通过严格的美甲任务门禁。",
+      "body_en": "Replay training, joint training and retention gates from garment flatten-and-fold (Task A) to nail-art manipulation (Task N) form a two-task Pareto trade-off; the offline best still misses the strict nail-art task gate.",
+      "metric_zh": "严格美甲任务门禁 · 通过数 0",
+      "metric_en": "strict nail-art task gate · 0 passes",
+      "status": "INCONCLUSIVE",
+      "status_zh": "证据不足",
+      "status_en": "INCONCLUSIVE",
+      "href": "#other-work"
+    }
+  ],
+  "evidence_cases": [
+    {
+      "id": "DATA-01",
+      "category": "data",
+      "verdict": "FALSIFIED",
+      "title_zh": "同分布验证高估跨日期泛化",
+      "title_en": "Held-in validation overestimates cross-date generalization",
+      "question_zh": "小型精选数据上的极低验证误差能否代表跨日期泛化？",
+      "question_en": "Does extremely low validation error on a curated set imply cross-date generalization?",
+      "result": "MAE@1 · 0.0065 → 0.0207 · 3.2× worse",
+      "result_zh": "单步平均绝对误差（MAE@1）· 0.0065 → 0.0207 · 误差扩大至 3.2 倍",
+      "result_en": "one-step Mean Absolute Error (MAE@1) · 0.0065 → 0.0207 · 3.2× worse",
+      "change_zh": "强制同时报告 native 与 source/date split；不再以 held-in 数字命名 SOTA。",
+      "change_en": "Report native and source/date splits together; never label a held-in metric as SOTA.",
+      "source": "VisRobot evidence ledger · DATA-01"
+    },
+    {
+      "id": "DATA-02",
+      "category": "data",
+      "verdict": "SUPPORTED",
+      "title_zh": "无效视觉输入干扰模型性能归因",
+      "title_en": "Invalid visual inputs confound model-performance attribution",
+      "question_zh": "X-VLA 表现差来自模型能力，还是训练图像 fallback？",
+      "question_en": "Was weak X-VLA performance caused by model capacity or the image fallback path?",
+      "result": "EE6D MAE@1 · 0.0654 → 0.0305",
+      "result_zh": "统一末端动作表示（EE6D）单步平均绝对误差 · 0.0654 → 0.0305",
+      "result_en": "unified end-effector action representation (EE6D) MAE@1 · 0.0654 → 0.0305",
+      "change_zh": "真机前加入图像有效性与 vision-dependence 门禁。",
+      "change_en": "Add image-validity and vision-dependence gates before robot deployment.",
+      "source": "VisRobot evidence ledger · DATA-02"
+    },
+    {
+      "id": "CR-04",
+      "category": "learning",
+      "verdict": "FALSIFIED",
+      "title_zh": "CRAVE 进度折线尚未击败时间基线",
+      "title_en": "CRAVE polyline has not beaten normalized time",
+      "question_zh": "状态驱动的进度折线是否优于朴素的归一化时间读出？",
+      "question_en": "Does state-aware progress outperform a normalized-time readout?",
+      "result": "accuracy · 0.7282 vs 0.8376 · boundary MAE 3.048 s vs 1.800 s",
+      "result_zh": "准确率 · 0.7282 vs 0.8376 · 边界平均绝对误差 3.048 s vs 1.800 s",
+      "result_en": "accuracy · 0.7282 vs 0.8376 · boundary MAE 3.048 s vs 1.800 s",
+      "change_zh": "保留时间基线作为反捷径对照；新增失效/分布外（OOD）检测头，禁止把终止价值等同于成功。",
+      "change_en": "Keep the anti-time baseline and add failure/OOD heads; terminal value is not success.",
+      "source": "VisRobot evidence ledger · CR-04"
+    },
+    {
+      "id": "WM-02",
+      "category": "learning",
+      "verdict": "INCONCLUSIVE",
+      "title_zh": "潜在里程碑世界模型残差变体未形成整体性能增益",
+      "title_en": "LMWM residual does not provide an aggregate performance gain",
+      "question_zh": "残差里程碑提示能否整体超过无世界模型基线？",
+      "question_en": "Can residual milestone hints beat the no-world-model baseline overall?",
+      "result": "absolute · 96.58 → residual · 96.90 < no-WM · 97.24",
+      "result_zh": "绝对提示 · 96.58 → 残差提示 · 96.90 < 无世界模型基线 · 97.24",
+      "result_en": "absolute hint · 96.58 → residual hint · 96.90 < no-world-model baseline · 97.24",
+      "change_zh": "从“总体提升”转向 precision–guidance 分解、梯度隔离和双通道研究。",
+      "change_en": "Shift from an aggregate-gain claim to precision–guidance decomposition, gradient isolation and dual channels.",
+      "source": "VisRobot evidence ledger · WM-02"
+    },
+    {
+      "id": "DEP-02",
+      "category": "deployment",
+      "verdict": "CORRECTED",
+      "title_zh": "端到端延迟结论的时间戳测量纠错",
+      "title_en": "Timestamp correction for end-to-end latency measurement",
+      "question_zh": "异步预取是否已经把“实际使用的相机帧→动作发出”观测年龄降到约 86 ms？",
+      "question_en": "Did asynchronous prefetch reduce used-camera-frame-to-command-emission observation age to roughly 86 ms?",
+      "result": "70% NaN / wrong timestamp → corrected P50 · 125.7–130.3 ms",
+      "result_zh": "70% 非数值记录/错误时间戳 → 修正后中位数（P50）· 125.7–130.3 ms",
+      "result_en": "70% NaN / incorrect timestamps → corrected median (P50) · 125.7–130.3 ms",
+      "change_zh": "观测时间戳随真实使用帧走侧通道；cycle throughput 与 sensor age 分开报告。",
+      "change_en": "Carry the timestamp with the consumed frame; report cycle throughput separately from sensor age.",
+      "source": "VisRobot evidence ledger · DEP-02"
+    },
+    {
+      "id": "DEP-04",
+      "category": "deployment",
+      "verdict": "FALSIFIED",
+      "title_zh": "统一指数移动平均不适用于离散夹爪控制",
+      "title_en": "Shared EMA is incompatible with discrete gripper control",
+      "question_zh": "所有动作维度在发布指令时统一采用指数移动平均（EMA）是否更稳定？",
+      "question_en": "Is a single publish-time EMA safe for every action dimension?",
+      "result": "90% gripper commands in [0.01, 0.03] · longest half-grasp 103.7 s",
+      "result_zh": "90% 夹爪指令落在 [0.01, 0.03] · 最长半抓取状态 103.7 s",
+      "result_en": "90% of gripper commands in [0.01, 0.03] · longest half-grasp 103.7 s",
+      "change_zh": "二值夹爪指令从指数移动平均中排除；按动作语义定义后处理。",
+      "change_en": "Exclude the binary gripper from EMA and make post-processing action-semantic aware.",
+      "source": "VisRobot evidence ledger · DEP-04"
+    },
+    {
+      "id": "CL-02",
+      "category": "learning",
+      "verdict": "INCONCLUSIVE",
+      "title_zh": "离线 retention 尚未满足持续学习门禁",
+      "title_en": "Offline retention does not yet satisfy the continual-learning gate",
+      "question_zh": "回放训练与联合训练候选策略能否同时保持衣物展平—折叠能力，并达到美甲操作任务独立监督微调（SFT）的水平？",
+      "question_en": "Can replay-trained and jointly trained candidates retain garment flatten-and-fold capability while matching independently supervised fine-tuning (SFT) on nail-art manipulation?",
+      "result": "replay/joint candidates MAE@1 · 0.00712/0.00704 vs strict gate · 0.00537 · 0 passes",
+      "result_zh": "回放/联合训练候选策略单步平均绝对误差 · 0.00712/0.00704；严格门禁 · 0.00537；通过数 · 0",
+      "result_en": "replay/joint candidates MAE@1 · 0.00712/0.00704 vs strict gate · 0.00537 · 0 passes",
+      "change_zh": "保留双任务 Pareto 与真机 retention gate；不提前替换旗舰策略。",
+      "change_en": "Keep the two-task Pareto and robot retention gate; do not replace the flagship policy early.",
+      "source": "VisRobot evidence ledger · CL-02"
+    }
+  ],
+  "reports": [
+    {
+      "href": "reports/crave_report/",
+      "label_zh": "跨轨迹复现价值估计（CRAVE）方法与里程碑",
+      "label_en": "Cross-episode Recurrence As Value Estimation (CRAVE): method and milestones",
+      "kind": "METHOD"
+    },
+    {
+      "href": "reports/crave_interp/",
+      "label_zh": "跨轨迹复现价值估计（CRAVE）可解释性诊断",
+      "label_en": "CRAVE interpretability diagnostics",
+      "kind": "DIAGNOSTIC"
+    },
+    {
+      "href": "reports/lmwm_final/",
+      "label_zh": "潜在里程碑世界模型（LMWM）预测与时序证据",
+      "label_en": "Latent Milestone World Model (LMWM): prediction and temporal evidence",
+      "kind": "RESEARCH"
+    },
+    {
+      "href": "reports/mint_vla_report/",
+      "label_zh": "Actionable Futures 证据报告",
+      "label_en": "Actionable Futures evidence report",
+      "kind": "EVIDENCE"
+    }
+  ]
+}

@@ -1,0 +1,346 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="VisRobot 是 deepdive_kai 旗下的具身智能研究项目，以真实双臂衣物展平—折叠为基准任务，研究可变形物体状态表征、VLA 策略、任务进度、物理执行与可靠部署。">
+  <meta name="theme-color" content="#071015">
+  <meta property="og:type" content="website">
+  <meta property="og:title" content="VisRobot · Reliable Bimanual Garment Manipulation">
+  <meta property="og:description" content="A systems study of data, learning, control and evaluation for deformable-object manipulation.">
+  <title>VisRobot · A deepdive_kai Project</title>
+  <link rel="icon" href="favicon.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="static/showcase.css">
+  <script defer src="static/showcase.js"></script>
+</head>
+<body>
+  <a class="skip-link" href="#folding" data-copy-zh="跳到正文" data-copy-en="Skip to content">跳到正文</a>
+
+  <header class="site-header">
+    <div class="nav-shell">
+      <a class="brand" href="#folding" aria-label="VisRobot home">
+        <span class="brand-mark" aria-hidden="true"></span>
+        <span>deepdive_kai / VisRobot</span>
+      </a>
+      <nav class="nav-links" id="site-nav" aria-label="Primary navigation">
+        <a href="#folding" data-copy-zh="叠衣主线" data-copy-en="Folding">叠衣主线</a>
+        <a href="#system" data-copy-zh="系统" data-copy-en="System">系统</a>
+        <a href="#research" data-copy-zh="研究" data-copy-en="Research">研究</a>
+        <a href="#other-work" data-copy-zh="其他工作" data-copy-en="Other Work">其他工作</a>
+        <a href="#evidence" data-copy-zh="证据" data-copy-en="Evidence">证据</a>
+      </nav>
+      <button class="nav-toggle" id="nav-toggle" type="button" aria-expanded="false" aria-controls="site-nav" aria-label="Toggle navigation">Menu</button>
+      <div class="lang-switch" aria-label="Language">
+        <button id="lang-zh" class="active" type="button" data-lang="zh" aria-pressed="true">中</button>
+        <button id="lang-en" type="button" data-lang="en" aria-pressed="false">EN</button>
+      </div>
+    </div>
+  </header>
+
+  <main>
+    <section class="hero-section folding-hero" id="folding">
+      <div class="section-shell">
+        <div class="hero-grid">
+          <div class="hero-copy">
+            <div class="status-line">
+              <span class="status-chip" data-copy-zh="双臂操作 · 可变形物体" data-copy-en="BIMANUAL MANIPULATION · DEFORMABLE OBJECTS">双臂操作 · 可变形物体</span>
+              <span class="status-chip warning" data-copy-zh="阶段性结果 · 正式协议待冻结" data-copy-en="PROVISIONAL RESULT · PROTOCOL FREEZE PENDING">阶段性结果 · 正式协议待冻结</span>
+            </div>
+            <h1>
+              <span data-copy-zh="可靠双臂" data-copy-en="Reliable Bimanual">可靠双臂</span><br>
+              <span class="accent" data-copy-zh="衣物操作" data-copy-en="Garment Manipulation">衣物操作</span>
+            </h1>
+            <p class="hero-lead"
+               data-copy-zh="VisRobot 是 deepdive_kai 旗下的具身智能研究项目，以真实双臂衣物展平—折叠为基准任务，系统研究可变形物体状态表征、长时策略学习、偏离检测与恢复，以及从策略推理到受约束物理执行的完整链路。"
+               data-copy-en="VisRobot is an embodied-AI research project within deepdive_kai. It uses real-world bimanual garment flatten-and-fold as a benchmark for deformable-state representation, long-horizon policy learning, deviation detection and recovery, and constrained physical execution.">VisRobot 是 deepdive_kai 旗下的具身智能研究项目，以真实双臂衣物展平—折叠为基准任务，系统研究可变形物体状态表征、长时策略学习、偏离检测与恢复，以及从策略推理到受约束物理执行的完整链路。</p>
+            <div class="hero-actions">
+              <a class="button-link primary" href="#problem" data-copy-zh="研究范围 ↓" data-copy-en="Research scope ↓">研究范围 ↓</a>
+              <a class="button-link" href="#evidence" data-copy-zh="证据与协议" data-copy-en="Evidence & protocols">证据与协议</a>
+            </div>
+          </div>
+
+          <figure class="demo-stage hero-demo">
+            <video autoplay muted loop playsinline preload="metadata" poster="static/media/folding-demo-poster.webp">
+              <source src="static/media/folding-demo.mp4" type="video/mp4">
+            </video>
+            <figcaption class="demo-caption">
+              <div>
+                <strong data-copy-zh="衣物展平—折叠任务（Task A）" data-copy-en="Garment flatten-and-fold task (Task A)">衣物展平—折叠任务（Task A）</strong>
+                <span data-copy-zh="代表性真机自主执行 · 原速" data-copy-en="Representative autonomous rollout · real-time">代表性真机自主执行 · 原速</span>
+              </div>
+              <span data-copy-zh="双 Piper 机械臂 · π0/π0.5 VLA 策略" data-copy-en="DUAL PIPER ARMS · π0/π0.5 VLA POLICY">双 Piper 机械臂 · π0/π0.5 VLA 策略</span>
+            </figcaption>
+          </figure>
+        </div>
+
+        <div class="resource-rail" aria-label="Project resources">
+          <span data-copy-zh="技术资源" data-copy-en="Technical resources">技术资源</span>
+          <a href="#evaluation" data-copy-zh="评测协议" data-copy-en="Protocol">评测协议</a>
+          <a href="#research" data-copy-zh="稳定性方法" data-copy-en="Motion stability">稳定性方法</a>
+          <a href="#evidence" data-copy-zh="声明注册表" data-copy-en="Claim registry">声明注册表</a>
+          <a href="#other-work" data-copy-zh="其他研究" data-copy-en="Other research">其他研究</a>
+          <a href="#glossary" data-copy-zh="术语与命名" data-copy-en="Terminology">术语与命名</a>
+        </div>
+        <div class="metric-grid" id="hero-metrics" aria-live="polite"></div>
+      </div>
+    </section>
+
+    <section class="manifesto-band" aria-label="Research thesis">
+      <div class="section-shell manifesto-grid">
+        <p class="eyebrow">RESEARCH THESIS</p>
+        <blockquote>
+          <span data-copy-zh="研究对象：真实双臂衣物展平—折叠" data-copy-en="Subject: real-world bimanual garment flatten-and-fold">研究对象：真实双臂衣物展平—折叠</span>
+          <strong data-copy-zh="目标：建立可评测、可部署、可持续迭代的可变形物体操作系统" data-copy-en="Objective: an evaluable, deployable and continuously improving system for deformable-object manipulation">目标：建立可评测、可部署、可持续迭代的可变形物体操作系统</strong>
+        </blockquote>
+      </div>
+    </section>
+
+    <section class="section problem-section" id="problem">
+      <div class="section-shell">
+        <header class="section-heading">
+          <div>
+            <p class="eyebrow">01 · WHY FOLDING IS HARD</p>
+            <h2 data-copy-zh="双臂衣物操作的核心技术挑战" data-copy-en="Core challenges in bimanual garment manipulation">双臂衣物操作的核心技术挑战</h2>
+          </div>
+          <p data-copy-zh="衣物状态随接触持续演化，单次抓取会改变后续可观测性与可操作性。视觉遮挡、双臂接触约束、长时误差传播和恢复决策相互耦合，使展平—折叠成为检验机器人学习系统综合能力的代表性任务。" data-copy-en="Garment state evolves under contact, and each grasp changes subsequent observability and manipulability. Visual occlusion, bimanual contact constraints, long-horizon error propagation and recovery decisions are tightly coupled, making flatten-and-fold a representative systems benchmark.">衣物状态随接触持续演化，单次抓取会改变后续可观测性与可操作性。视觉遮挡、双臂接触约束、长时误差传播和恢复决策相互耦合，使展平—折叠成为检验机器人学习系统综合能力的代表性任务。</p>
+        </header>
+
+        <div class="challenge-grid">
+          <article class="challenge-card"><span>01</span><h3 data-copy-zh="可变形状态" data-copy-en="Deformable state">可变形状态</h3><p data-copy-zh="褶皱、遮挡和拓扑关系无法由少量关键点完整表达。" data-copy-en="Wrinkles, occlusion and topology cannot be fully captured by a few keypoints.">褶皱、遮挡和拓扑关系无法由少量关键点完整表达。</p></article>
+          <article class="challenge-card"><span>02</span><h3 data-copy-zh="部分可观测" data-copy-en="Partial observability">部分可观测</h3><p data-copy-zh="纯视觉观测无法直接获取遮挡衣角、接触力和潜在滑动。" data-copy-en="Vision alone does not directly expose occluded corners, contact forces or latent slip.">纯视觉观测无法直接获取遮挡衣角、接触力和潜在滑动。</p></article>
+          <article class="challenge-card"><span>03</span><h3 data-copy-zh="双臂协同" data-copy-en="Bimanual coordination">双臂协同</h3><p data-copy-zh="抓取、张紧、摆动和释放要求两臂在空间与时间上耦合。" data-copy-en="Grasping, tensioning, swinging and release couple both arms in space and time.">抓取、张紧、摆动和释放要求两臂在空间与时间上耦合。</p></article>
+          <article class="challenge-card"><span>04</span><h3 data-copy-zh="长时误差" data-copy-en="Long-horizon error">长时误差</h3><p data-copy-zh="早期错抓会在展平、折叠与对齐阶段逐步放大。" data-copy-en="An early bad grasp compounds through flattening, folding and alignment.">早期错抓会在展平、折叠与对齐阶段逐步放大。</p></article>
+          <article class="challenge-card"><span>05</span><h3 data-copy-zh="阶段与进度" data-copy-en="Stage & progress">阶段与进度</h3><p data-copy-zh="策略必须判断正在推进、停滞，还是已经偏离可恢复轨迹。" data-copy-en="The policy must distinguish progress, stagnation and recoverable deviation.">策略必须判断正在推进、停滞，还是已经偏离可恢复轨迹。</p></article>
+          <article class="challenge-card"><span>06</span><h3 data-copy-zh="可靠物理执行" data-copy-en="Reliable execution">可靠物理执行</h3><p data-copy-zh="延迟、chunk 接缝、抖动和夹爪语义都会改变任务结果。" data-copy-en="Latency, chunk seams, jitter and gripper semantics all change outcomes.">延迟、chunk 接缝、抖动和夹爪语义都会改变任务结果。</p></article>
+        </div>
+
+        <div class="task-timeline" aria-label="Folding task stages">
+          <div><span>00</span><b data-copy-zh="随机初态" data-copy-en="Random state">随机初态</b></div>
+          <div><span>01</span><b data-copy-zh="展平" data-copy-en="Flatten">展平</b></div>
+          <div><span>02</span><b data-copy-zh="找角" data-copy-en="Find corners">找角</b></div>
+          <div><span>03</span><b data-copy-zh="重抓" data-copy-en="Regrasp">重抓</b></div>
+          <div><span>04</span><b data-copy-zh="折叠与对齐" data-copy-en="Fold & align">折叠与对齐</b></div>
+          <div><span>05</span><b data-copy-zh="释放" data-copy-en="Release">释放</b></div>
+        </div>
+      </div>
+    </section>
+
+    <section class="section" id="system">
+      <div class="section-shell">
+        <header class="section-heading">
+          <div>
+            <p class="eyebrow">02 · THE SYSTEM BEHIND FOLDING</p>
+            <h2 data-copy-zh="数据闭环、策略学习与物理执行的统一系统" data-copy-en="A unified system for data, policy learning and physical execution">数据闭环、策略学习与物理执行的统一系统</h2>
+          </div>
+          <p data-copy-zh="数据生产、策略学习、物理执行和失败回流构成同一发布单元。每次真机失败都要能回到具体数据来源、模型版本、执行参数与下一轮补采。" data-copy-en="Data production, policy learning, physical execution and failure feedback form one release unit. Every robot failure must trace back to data sources, model versions, execution parameters and the next recollection cycle.">数据生产、策略学习、物理执行和失败回流构成同一发布单元。每次真机失败都要能回到具体数据来源、模型版本、执行参数与下一轮补采。</p>
+        </header>
+        <div class="system-rail system-four" id="system-rail"></div>
+        <div class="loop-note">
+          <span data-copy-zh="Outcome + intervention + failure taxonomy + dataset lineage" data-copy-en="Outcome + intervention + failure taxonomy + dataset lineage">Outcome + intervention + failure taxonomy + dataset lineage</span>
+          <strong>04 ↺ 01</strong>
+        </div>
+
+        <div class="data-grid system-detail-grid">
+          <article class="data-card">
+            <span class="card-number">GARMENT DATA</span>
+            <h3 data-copy-zh="面向状态覆盖与失效模式的数据生产" data-copy-en="Data production for state coverage and failure modes">面向状态覆盖与失效模式的数据生产</h3>
+            <p data-copy-zh="遥操作、自主执行与数据集聚合（DAgger）保留来源、接管、阶段与结果语义；黑图、时间戳和数据格式异常在进入训练前即被拦截。" data-copy-en="Teleoperation, autonomous rollouts and Dataset Aggregation (DAgger) preserve source, intervention, stage and outcome semantics; black frames, timestamps and schema faults are rejected before training.">遥操作、自主执行与数据集聚合（DAgger）保留来源、接管、阶段与结果语义；黑图、时间戳和数据格式异常在进入训练前即被拦截。</p>
+            <ul><li><span data-copy-zh="衣物任务历史轨迹" data-copy-en="Garment-task episodes">衣物任务历史轨迹</span><b>3,055</b></li><li><span data-copy-zh="特征/标签帧" data-copy-en="Feature/label frames">特征/标签帧</span><b>3,362,369</b></li><li><span data-copy-zh="主要视角" data-copy-en="Primary views">主要视角</span><b>3</b></li></ul>
+          </article>
+          <article class="data-card">
+            <span class="card-number">POLICY RELEASE</span>
+            <h3 data-copy-zh="训练—部署配置的版本一致性" data-copy-en="Version consistency across training and deployment">训练—部署配置的版本一致性</h3>
+            <p data-copy-zh="模型检查点、归一化统计、相机变换、语言指令、动作分块、实时动作分块（RTC）与动作映射共同写入部署清单；跨日期划分与视觉依赖测试先于真机发布。" data-copy-en="Checkpoints, normalization statistics, camera transforms, prompts, action chunks, Real-Time Chunking (RTC) and action mappings enter one deployment manifest; cross-date splits and vision-dependence tests precede robot release.">模型检查点、归一化统计、相机变换、语言指令、动作分块、实时动作分块（RTC）与动作映射共同写入部署清单；跨日期划分与视觉依赖测试先于真机发布。</p>
+            <ul><li><span>production mainline</span><b>π0 / π0.5</b></li><li><span>cross-date gap</span><b>3.2×</b></li><li><span>release unit</span><b>manifest</b></li></ul>
+          </article>
+          <article class="data-card">
+            <span class="card-number">ROBOT GATE</span>
+            <h3 data-copy-zh="可观测、受约束的物理执行" data-copy-en="Observable and constrained physical execution">可观测、受约束的物理执行</h3>
+            <p data-copy-zh="双 Piper 机械臂、三视角、机器人操作系统 2（ROS 2）和安全状态机承担真实执行；观测过期、网络超时或异常动作默认保持或停止。" data-copy-en="Dual Piper arms, three views, Robot Operating System 2 (ROS 2) and a safety state machine execute the policy; stale observations, network timeouts and invalid actions default to hold or stop.">双 Piper 机械臂、三视角、机器人操作系统 2（ROS 2）和安全状态机承担真实执行；观测过期、网络超时或异常动作默认保持或停止。</p>
+            <ul><li><span>hardware</span><b>dual Piper</b></li><li><span>middleware</span><b>ROS 2</b></li><li><span>invalid action</span><b>fail closed</b></li></ul>
+          </article>
+        </div>
+      </div>
+    </section>
+
+    <section class="section research-section" id="research">
+      <div class="section-shell">
+        <header class="section-heading">
+          <div>
+            <p class="eyebrow">03 · RESEARCH QUESTIONS</p>
+            <h2 data-copy-zh="四个相互耦合的核心研究问题" data-copy-en="Four coupled research questions">四个相互耦合的核心研究问题</h2>
+          </div>
+          <p data-copy-zh="研究证据按照可变形状态表征、双臂策略学习、任务进度与恢复、实时物理执行四个方向组织。衣物展平—折叠任务（Task A）之外的结果保持独立证据状态，不用于解释旗舰成功率。" data-copy-en="Evidence is organized around deformable-state representation, bimanual policy learning, task progress and recovery, and real-time physical execution. Results outside the garment flatten-and-fold task (Task A) retain independent evidence states and are not used to explain the flagship success rate.">研究证据按照可变形状态表征、双臂策略学习、任务进度与恢复、实时物理执行四个方向组织。衣物展平—折叠任务（Task A）之外的结果保持独立证据状态，不用于解释旗舰成功率。</p>
+        </header>
+        <div class="learning-layout">
+          <div class="learning-tabs" id="learning-tabs" role="tablist" aria-label="Research questions"></div>
+          <div class="learning-panel" id="learning-panel" role="tabpanel"></div>
+        </div>
+
+        <div class="deployment-grid motion-grid">
+          <article class="deploy-card">
+            <span class="card-number">MODEL → CONTROL</span>
+            <h3 data-copy-zh="推理延迟、控制周期与观测新鲜度的分层测量" data-copy-en="Layered measurement of inference, control cycle and observation age">推理延迟、控制周期与观测新鲜度的分层测量</h3>
+            <p data-copy-zh="模型前向计算、控制周期与“实际使用的相机帧→动作发出”观测年龄分别对应计算耗时、系统吞吐和观测新鲜度，采用独立指标报告。" data-copy-en="Model forward time, control-cycle time and used-camera-frame-to-command-emission observation age measure compute, throughput and observation freshness respectively and are reported independently.">模型前向计算、控制周期与“实际使用的相机帧→动作发出”观测年龄分别对应计算耗时、系统吞吐和观测新鲜度，采用独立指标报告。</p>
+            <div class="latency-stack">
+              <div class="latency-row"><span data-copy-zh="常规前向 P50" data-copy-en="Eager forward P50">常规前向 P50</span><div class="latency-track"><div class="latency-bar" style="--bar:100%"></div></div><strong>256.5 ms</strong></div>
+              <div class="latency-row"><span data-copy-zh="Triton GPU 前向 P50" data-copy-en="Triton GPU forward P50">Triton GPU 前向 P50</span><div class="latency-track"><div class="latency-bar" style="--bar:12.5%"></div></div><strong>32.05 ms</strong></div>
+              <div class="latency-row"><span data-copy-zh="基线周期 P50" data-copy-en="Baseline cycle P50">基线周期 P50</span><div class="latency-track"><div class="latency-bar" style="--bar:31.4%"></div></div><strong>80.5 ms</strong></div>
+              <div class="latency-row"><span data-copy-zh="优化周期 P50" data-copy-en="Optimized cycle P50">优化周期 P50</span><div class="latency-track"><div class="latency-bar" style="--bar:15.6%"></div></div><strong>40.05 ms</strong></div>
+            </div>
+            <div class="measurement-note" data-copy-zh="早期约 86 ms 的端到端结论因 70% 非数值记录（NaN）与错误时间戳撤销；修正后的“实际使用帧→动作发出”中位数（P50）为 125.7–130.3 ms。" data-copy-en="An earlier ~86 ms end-to-end result was retracted because of 70% not-a-number (NaN) records and incorrect timestamps; corrected used-frame-to-command-emission median (P50) is 125.7–130.3 ms.">早期约 86 ms 的端到端结论因 70% 非数值记录（NaN）与错误时间戳撤销；修正后的“实际使用帧→动作发出”中位数（P50）为 125.7–130.3 ms。</div>
+          </article>
+          <article class="deploy-card">
+            <span class="card-number">MOTION QUALITY</span>
+            <h3 data-copy-zh="控制稳定性的量化与发布门禁" data-copy-en="Quantitative control-stability release gates">控制稳定性的量化与发布门禁</h3>
+            <p data-copy-zh="同一记录 setup 下，联合评价 raw action、emitted command 与 measured state；数值用于版本回归，不外推到不同硬件。" data-copy-en="On the same recorded setup, raw actions, emitted commands and measured states are evaluated together. Values support release regression and are not extrapolated across hardware.">同一记录 setup 下，联合评价 raw action、emitted command 与 measured state；数值用于版本回归，不外推到不同硬件。</p>
+            <div class="stability-list">
+              <div class="stability-item"><span data-copy-zh="末端执行器静止抖动" data-copy-en="Idle end-effector jiggle">末端执行器静止抖动</span><b>3.33 → 0.63 mm · −81%</b></div>
+              <div class="stability-item"><span data-copy-zh="加加速度 P95" data-copy-en="Jerk P95">加加速度 P95</span><b>7,580 → 3,562 · −53%</b></div>
+              <div class="stability-item"><span data-copy-zh="速度反转率" data-copy-en="Velocity reversals">速度反转率</span><b>1.27 → 0.12 · −91%</b></div>
+            </div>
+            <div class="measurement-note" data-copy-zh="二值夹爪指令从统一指数移动平均（EMA）中排除；动作后处理必须区分连续运动与离散抓取语义。" data-copy-en="The binary gripper command is excluded from the shared exponential moving average (EMA); post-processing must distinguish continuous motion from discrete grasp semantics.">二值夹爪指令从统一指数移动平均（EMA）中排除；动作后处理必须区分连续运动与离散抓取语义。</div>
+          </article>
+        </div>
+      </div>
+    </section>
+
+    <section class="section evaluation-section" id="evaluation">
+      <div class="section-shell">
+        <header class="section-heading">
+          <div>
+            <p class="eyebrow">04 · EVALUATION</p>
+            <h2 data-copy-zh="协议约束下的性能评估" data-copy-en="Protocol-bounded performance evaluation">协议约束下的性能评估</h2>
+          </div>
+          <p data-copy-zh="正式页面将以连续试验、完整视频、初态×衣物网格、超时、接管、完成时间和 Wilson 置信区间支撑结论。当前近 100% 为用户报告，成功数与总试验数尚未冻结。" data-copy-en="The final claim will be grounded in consecutive trials, complete videos, an initial-state × garment grid, timeouts, interventions, completion time and Wilson confidence intervals. The current near-100% result is user-reported; successes and total trials are not yet frozen.">正式页面将以连续试验、完整视频、初态×衣物网格、超时、接管、完成时间和 Wilson 置信区间支撑结论。当前近 100% 为用户报告，成功数与总试验数尚未冻结。</p>
+        </header>
+
+        <div class="protocol-gate">
+          <div><small data-copy-zh="成功率" data-copy-en="SUCCESS">成功率</small><strong>≈100%</strong><span data-copy-zh="用户报告" data-copy-en="USER-REPORTED">用户报告</span></div>
+          <div><small data-copy-zh="试验次数" data-copy-en="TRIAL COUNT">试验次数</small><strong data-copy-zh="成功数 / 总数" data-copy-en="successes / trials">成功数 / 总数</strong><span data-copy-zh="待冻结" data-copy-en="PENDING">待冻结</span></div>
+          <div><small data-copy-zh="衣物 × 初态" data-copy-en="GARMENTS × STATES">衣物 × 初态</small><strong data-copy-zh="衣物数 × 初态数" data-copy-en="garments × states">衣物数 × 初态数</strong><span data-copy-zh="待冻结" data-copy-en="PENDING">待冻结</span></div>
+          <div><small data-copy-zh="95% 置信区间" data-copy-en="95% CONFIDENCE INTERVAL">95% 置信区间</small><strong data-copy-zh="[下界, 上界]" data-copy-en="[lower, upper]">[下界, 上界]</strong><span data-copy-zh="待冻结" data-copy-en="PENDING">待冻结</span></div>
+          <div><small data-copy-zh="吞吐量" data-copy-en="THROUGHPUT">吞吐量</small><strong data-copy-zh="每小时折叠次数（FPH）" data-copy-en="Folds per hour (FPH)">每小时折叠次数（FPH）</strong><span data-copy-zh="待冻结" data-copy-en="PENDING">待冻结</span></div>
+        </div>
+
+        <div class="comparison-table-wrap">
+          <table class="comparison-table">
+            <thead><tr><th data-copy-zh="工作" data-copy-en="Work">工作</th><th data-copy-zh="核心任务" data-copy-en="Core task">核心任务</th><th data-copy-zh="公开规模" data-copy-en="Public scale">公开规模</th><th data-copy-zh="报告结果" data-copy-en="Reported result">报告结果</th><th data-copy-zh="比较边界" data-copy-en="Comparison boundary">比较边界</th></tr></thead>
+            <tbody>
+              <tr><td><a href="https://thu-air-dream.github.io/X-VLA/" target="_blank" rel="noreferrer">X-VLA Soft-Fold</a></td><td data-copy-zh="高度无序衣物展平—折叠" data-copy-en="Disordered garment flatten-and-fold">高度无序衣物展平—折叠</td><td data-copy-zh="1,200 条轨迹" data-copy-en="1,200 episodes">1,200 条轨迹</td><td data-copy-zh="作者报告接近 100% · 每小时折叠 33 次" data-copy-en="Authors report near 100% · 33 folds per hour">作者报告接近 100% · 每小时折叠 33 次</td><td data-copy-zh="最接近；平台与协议仍不同" data-copy-en="Closest; platform and protocol still differ">最接近；平台与协议仍不同</td></tr>
+              <tr><td><a href="https://github.com/OpenDriveLab/kai0" target="_blank" rel="noreferrer">χ0 / KAI</a></td><td data-copy-zh="任意初态 T 恤展平—折叠" data-copy-en="Arbitrary-state T-shirt flatten-and-fold">任意初态 T 恤展平—折叠</td><td data-copy-zh="3 种衣物 × 每种 10 次试验" data-copy-en="3 garments × 10 trials each">3 种衣物 × 每种 10 次试验</td><td data-copy-zh="作者协议 · 180 秒" data-copy-en="Author protocol · 180 s">作者协议 · 180 秒</td><td data-copy-zh="需对齐初态与重试定义" data-copy-en="Must align state and retry definitions">需对齐初态与重试定义</td></tr>
+              <tr class="current-row"><td>VisRobot (deepdive_kai)</td><td data-copy-zh="真实双臂衣物展平—折叠" data-copy-en="Real bimanual garment flatten-and-fold">真实双臂衣物展平—折叠</td><td data-copy-zh="3,055 条历史轨迹" data-copy-en="3,055 historical episodes">3,055 条历史轨迹</td><td data-copy-zh="≈100% · 用户报告" data-copy-en="≈100% · USER-REPORTED">≈100% · 用户报告</td><td data-copy-zh="冻结成功数/总数、95% 置信区间与每小时折叠次数后升级" data-copy-en="Upgrade after freezing successes/trials, the 95% confidence interval and folds per hour">冻结成功数/总数、95% 置信区间与每小时折叠次数后升级</td></tr>
+            </tbody>
+          </table>
+        </div>
+        <p class="table-note" data-copy-zh="跨项目任务、硬件、初态和失败定义不同；本表用于定位协议，不构成无条件排行榜。" data-copy-en="Tasks, hardware, initial states and failure definitions differ across projects. This table positions protocols; it is not an unconditional leaderboard.">跨项目任务、硬件、初态和失败定义不同；本表用于定位协议，不构成无条件排行榜。</p>
+      </div>
+    </section>
+
+    <section class="section other-work-section" id="other-work">
+      <div class="section-shell">
+        <header class="section-heading">
+          <div>
+            <p class="eyebrow">05 · OTHER WORK</p>
+            <h2 data-copy-zh="从衣物操作延展至通用机器人学习" data-copy-en="Extending garment manipulation toward general robot learning">从衣物操作延展至通用机器人学习</h2>
+          </div>
+          <p data-copy-zh="相关研究覆盖进度感知后训练、预测表征、跨本体泛化和持续学习。各方向单独报告实验协议、结果与局限，并说明其与衣物操作主线的技术联系。" data-copy-en="Related work covers progress-aware post-training, predictive representations, cross-embodiment generalization and continual learning. Each direction reports its protocol, results, limitations and technical relationship to garment manipulation separately.">相关研究覆盖进度感知后训练、预测表征、跨本体泛化和持续学习。各方向单独报告实验协议、结果与局限，并说明其与衣物操作主线的技术联系。</p>
+        </header>
+        <div class="other-work-grid" id="other-work-grid"></div>
+
+        <article class="report-entry">
+          <div>
+            <span class="report-kind">FEATURED EVIDENCE REPORT</span>
+            <h3 data-copy-zh="可行动未来表征：预测信息对控制决策的实际贡献" data-copy-en="Actionable Future Representations: When Predictions Influence Control">可行动未来表征：预测信息对控制决策的实际贡献</h3>
+            <p data-copy-zh="报告分别评估未来表征的可预测性、同条件效用、内容使用和来源归因，用于判定预测信息是否对控制产生可验证贡献。" data-copy-en="The report evaluates predictability, matched utility, content use and source attribution separately to determine whether future representations make a verifiable contribution to control.">报告分别评估未来表征的可预测性、同条件效用、内容使用和来源归因，用于判定预测信息是否对控制产生可验证贡献。</p>
+          </div>
+          <a class="button-link report-link" href="reports/mint_vla_report/" data-copy-zh="打开报告 →" data-copy-en="Open report →">打开报告 →</a>
+        </article>
+        <div class="report-grid" id="report-grid" aria-label="Technical reports"></div>
+      </div>
+    </section>
+
+    <section class="section" id="evidence">
+      <div class="section-shell">
+        <header class="section-heading">
+          <div>
+            <p class="eyebrow">06 · EVIDENCE & FAILURE SCIENCE</p>
+            <h2 data-copy-zh="以反证与失效分析驱动系统迭代" data-copy-en="System iteration through falsification and failure analysis">以反证与失效分析驱动系统迭代</h2>
+          </div>
+          <p data-copy-zh="证据条目统一记录研究假设、观测结果、判定状态、工程变更和本地证据来源，使负结果与测量纠错能够进入后续系统设计。" data-copy-en="Each entry records the hypothesis, observation, verdict, engineering change and local evidence source, allowing negative results and measurement corrections to inform subsequent system design.">证据条目统一记录研究假设、观测结果、判定状态、工程变更和本地证据来源，使负结果与测量纠错能够进入后续系统设计。</p>
+        </header>
+        <div class="evidence-toolbar" aria-label="Evidence filters">
+          <button class="filter-button active" type="button" data-evidence-filter="all" data-copy-zh="全部" data-copy-en="All">全部</button>
+          <button class="filter-button" type="button" data-evidence-filter="data" data-copy-zh="数据" data-copy-en="Data">数据</button>
+          <button class="filter-button" type="button" data-evidence-filter="learning" data-copy-zh="学习" data-copy-en="Learning">学习</button>
+          <button class="filter-button" type="button" data-evidence-filter="deployment" data-copy-zh="部署" data-copy-en="Deployment">部署</button>
+        </div>
+        <div class="evidence-grid" id="evidence-grid" aria-live="polite"></div>
+        <div class="evidence-footer">
+          <span data-copy-zh="完整注册表：38 条研究声明、证据等级、公开措辞与 8 个关键证据缺口。" data-copy-en="Full registry: 38 claims, evidence levels, public wording and eight critical evidence gaps.">完整注册表：38 条研究声明、证据等级、公开措辞与 8 个关键证据缺口。</span>
+          <a href="#evidence" data-copy-zh="查看注册表" data-copy-en="Open registry">查看注册表</a>
+        </div>
+      </div>
+    </section>
+
+    <section class="section glossary-section" id="glossary">
+      <div class="section-shell">
+        <header class="section-heading">
+          <div>
+            <p class="eyebrow">07 · TERMINOLOGY</p>
+            <h2 data-copy-zh="任务命名与技术术语" data-copy-en="Task naming and technical terminology">任务命名与技术术语</h2>
+          </div>
+          <p data-copy-zh="任务代码仅用于关联内部数据与实验记录。面向访客的内容始终先写任务全称，再在括号中保留代码；技术缩写在首次出现时给出完整含义。" data-copy-en="Task codes link internal datasets and experiment records. Public-facing content always gives the full task name before the code in parentheses, and technical acronyms are expanded on first use.">任务代码仅用于关联内部数据与实验记录。面向访客的内容始终先写任务全称，再在括号中保留代码；技术缩写在首次出现时给出完整含义。</p>
+        </header>
+        <dl class="glossary-grid">
+          <div><dt>Task A</dt><dd data-copy-zh="衣物展平—折叠任务：本项目的旗舰真机基准任务。" data-copy-en="Garment flatten-and-fold: the flagship real-robot benchmark in this project.">衣物展平—折叠任务：本项目的旗舰真机基准任务。</dd></div>
+          <div><dt>Task N</dt><dd data-copy-zh="美甲操作任务：用于进度建模、后训练与持续学习研究。" data-copy-en="Nail-art manipulation: used for progress modeling, post-training and continual-learning studies.">美甲操作任务：用于进度建模、后训练与持续学习研究。</dd></div>
+          <div><dt>VLA</dt><dd data-copy-zh="视觉—语言—动作模型（Vision-Language-Action）：由视觉观测和语言指令生成机器人动作。" data-copy-en="Vision-Language-Action model: generates robot actions from visual observations and language instructions.">视觉—语言—动作模型（Vision-Language-Action）：由视觉观测和语言指令生成机器人动作。</dd></div>
+          <div><dt>π0 / π0.5</dt><dd data-copy-zh="Physical Intelligence 提出的视觉—语言—动作策略系列；本项目将其作为生产策略主线。" data-copy-en="The Vision-Language-Action policy family introduced by Physical Intelligence and used as this project's production-policy mainline.">Physical Intelligence 提出的视觉—语言—动作策略系列；本项目将其作为生产策略主线。</dd></div>
+          <div><dt>CRAVE</dt><dd data-copy-zh="跨轨迹复现价值估计（Cross-episode Recurrence As Value Estimation）：从重复状态结构构造阶段与进度信号。" data-copy-en="Cross-episode Recurrence As Value Estimation: derives stage and progress signals from recurrent state structure across trajectories.">跨轨迹复现价值估计（Cross-episode Recurrence As Value Estimation）：从重复状态结构构造阶段与进度信号。</dd></div>
+          <div><dt>LMWM</dt><dd data-copy-zh="潜在里程碑世界模型（Latent Milestone World Model）：预测下一任务里程碑的潜在表征。" data-copy-en="Latent Milestone World Model: predicts a latent representation of the next task milestone.">潜在里程碑世界模型（Latent Milestone World Model）：预测下一任务里程碑的潜在表征。</dd></div>
+          <div><dt>EE6D</dt><dd data-copy-zh="统一末端动作表示：由 xyz 位置、六维旋转编码与夹爪状态组成，面向跨本体动作对齐。" data-copy-en="Unified end-effector action representation combining xyz position, a 6D rotation encoding and gripper state for cross-embodiment alignment.">统一末端动作表示：由 xyz 位置、六维旋转编码与夹爪状态组成，面向跨本体动作对齐。</dd></div>
+          <div><dt>RTC</dt><dd data-copy-zh="实时动作分块（Real-Time Chunking）：在连续重规划中衔接相邻动作序列。" data-copy-en="Real-Time Chunking: connects adjacent action sequences during continuous replanning.">实时动作分块（Real-Time Chunking）：在连续重规划中衔接相邻动作序列。</dd></div>
+          <div><dt>DCT</dt><dd data-copy-zh="离散余弦变换（Discrete Cosine Transform）：本项目用于约束动作频域特性的训练辅助项。" data-copy-en="Discrete Cosine Transform: used here as a training auxiliary term for action-frequency characteristics.">离散余弦变换（Discrete Cosine Transform）：本项目用于约束动作频域特性的训练辅助项。</dd></div>
+          <div><dt>EMA</dt><dd data-copy-zh="指数移动平均（Exponential Moving Average）：对连续控制量进行时序平滑。" data-copy-en="Exponential Moving Average: temporally smooths continuous control values.">指数移动平均（Exponential Moving Average）：对连续控制量进行时序平滑。</dd></div>
+          <div><dt>P50 / P95</dt><dd data-copy-zh="指标分布的第 50 / 95 百分位；P50 即中位数，P95 描述尾部水平。" data-copy-en="The 50th and 95th percentiles of a metric distribution; P50 is the median and P95 characterizes the tail.">指标分布的第 50 / 95 百分位；P50 即中位数，P95 描述尾部水平。</dd></div>
+          <div><dt>MAE</dt><dd data-copy-zh="平均绝对误差（Mean Absolute Error）：预测与参考动作之间的平均绝对偏差。" data-copy-en="Mean Absolute Error: the mean absolute deviation between predicted and reference actions.">平均绝对误差（Mean Absolute Error）：预测与参考动作之间的平均绝对偏差。</dd></div>
+          <div><dt>OOD</dt><dd data-copy-zh="分布外（Out-of-Distribution）：超出训练数据覆盖范围的观测或状态。" data-copy-en="Out-of-Distribution: observations or states beyond the coverage of the training data.">分布外（Out-of-Distribution）：超出训练数据覆盖范围的观测或状态。</dd></div>
+          <div><dt data-copy-zh="证据状态" data-copy-en="Evidence status">证据状态</dt><dd data-copy-zh="“用户报告”表示协议尚未冻结；“产物核验”表示由本地结果文件支持；“真机记录核验”表示由机器人日志或视频记录支持。" data-copy-en="User-reported means the protocol is not yet frozen; artifact-verified is supported by local result files; robot-trace-verified is supported by robot logs or videos.">“用户报告”表示协议尚未冻结；“产物核验”表示由本地结果文件支持；“真机记录核验”表示由机器人日志或视频记录支持。</dd></div>
+        </dl>
+      </div>
+    </section>
+  </main>
+
+  <footer class="site-footer">
+    <div class="section-shell">
+      <div class="footer-grid">
+        <div>
+          <p class="eyebrow">RESEARCH IDENTITY</p>
+          <h2 data-copy-zh="可变形物体操作的全栈机器人学习系统" data-copy-en="A full-stack robot-learning system for deformable-object manipulation">可变形物体操作的全栈机器人学习系统</h2>
+        </div>
+        <div class="footer-links">
+          <a href="#folding" data-copy-zh="返回叠衣主线 ↑" data-copy-en="Back to folding ↑">返回叠衣主线 ↑</a>
+          <a href="#glossary" data-copy-zh="术语与命名" data-copy-en="Terminology">术语与命名</a>
+          <a href="reports/crave_report/" data-copy-zh="CRAVE 方法报告" data-copy-en="CRAVE method report">CRAVE 方法报告</a>
+          <a href="reports/mint_vla_report/">Actionable Futures report</a>
+          <a href="#glossary">Figure & asset map</a>
+        </div>
+      </div>
+      <div class="footer-meta"><span>VisRobot · a deepdive_kai project · 2026</span><span>EVIDENCE BEFORE SUPERLATIVES</span></div>
+    </div>
+  </footer>
+
+  <dialog class="evidence-dialog" id="evidence-dialog">
+    <div class="dialog-inner">
+      <button class="dialog-close" type="button" aria-label="Close">×</button>
+      <p class="dialog-kicker" id="dialog-kicker"></p>
+      <h2 id="dialog-title"></h2>
+      <div class="dialog-block"><small>QUESTION / 原假设</small><p id="dialog-question"></p></div>
+      <div class="dialog-block result"><small>OBSERVED RESULT / 结果</small><p id="dialog-result"></p></div>
+      <div class="dialog-block"><small>WHAT CHANGED / 工程变化</small><p id="dialog-change"></p></div>
+      <div class="dialog-block"><small>LOCAL SOURCE / 本地证据</small><p id="dialog-source"></p></div>
+    </div>
+  </dialog>
+</body>
+</html>

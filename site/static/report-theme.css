@@ -1,0 +1,443 @@
+/* Shared report skin for VisRobot, a deepdive_kai project.
+ * Report-local CSS remains responsible for scientific layouts and figures;
+ * this layer aligns public chrome, typography, surfaces and semantic colors.
+ */
+
+:root {
+  color-scheme: dark;
+  --bg: #071015;
+  --bg2: #0a151b;
+  --bg3: #0c181e;
+  --bg4: #112129;
+  --panel: rgba(12, 24, 30, 0.82);
+  --border: rgba(170, 205, 214, 0.14);
+  --border2: rgba(170, 205, 214, 0.28);
+  --text: #edf5f7;
+  --text2: #94a8b2;
+  --text3: #60757f;
+  --accent: #70e1c1;
+  --accent2: #2d8e7b;
+  --accent3: #8be8ce;
+  --glow: rgba(112, 225, 193, 0.22);
+  --green: #53d18b;
+  --red: #ff9478;
+  --yellow: #f4b860;
+  --blue: #74b9ff;
+  --grid: rgba(170, 205, 214, 0.035);
+
+  /* Actionable Futures aliases. */
+  --ink: #edf5f7;
+  --muted: #94a8b2;
+  --faint: #60757f;
+  --paper: #0c181e;
+  --canvas: #071015;
+  --line: rgba(170, 205, 214, 0.14);
+  --line-strong: rgba(170, 205, 214, 0.28);
+  --navy: #edf5f7;
+  --teal: #70e1c1;
+  --teal-soft: rgba(112, 225, 193, 0.09);
+  --blue-soft: rgba(116, 185, 255, 0.09);
+  --red-soft: rgba(255, 148, 120, 0.09);
+  --amber: #f4b860;
+  --amber-soft: rgba(244, 184, 96, 0.09);
+  --green-soft: rgba(83, 209, 139, 0.09);
+  --shadow: 0 30px 80px rgba(0, 0, 0, 0.28);
+}
+
+html {
+  scroll-padding-top: 74px;
+}
+
+body {
+  color: var(--text2) !important;
+  background:
+    radial-gradient(circle at 84% 6%, rgba(112, 225, 193, 0.09), transparent 30rem),
+    radial-gradient(circle at 5% 38%, rgba(169, 149, 255, 0.07), transparent 34rem),
+    var(--bg) !important;
+  font-family: Inter, ui-sans-serif, -apple-system, BlinkMacSystemFont, "Segoe UI", "Noto Sans SC", sans-serif !important;
+}
+
+body::before {
+  background-image:
+    linear-gradient(var(--grid) 1px, transparent 1px),
+    linear-gradient(90deg, var(--grid) 1px, transparent 1px) !important;
+  background-size: 42px 42px !important;
+}
+
+body::after {
+  background: radial-gradient(ellipse 80% 50% at 50% -10%, rgba(112, 225, 193, 0.08), transparent 70%) !important;
+}
+
+::selection {
+  color: #071015;
+  background: #70e1c1;
+}
+
+a {
+  text-underline-offset: 3px;
+}
+
+/* Shared project context bar for reports that did not originally have one. */
+.report-context {
+  position: sticky;
+  top: 0;
+  z-index: 40;
+  min-height: 58px;
+  border-bottom: 1px solid var(--line);
+  background: rgba(7, 16, 21, 0.9);
+  backdrop-filter: blur(18px);
+}
+
+.report-context-inner {
+  width: min(1220px, calc(100% - 40px));
+  min-height: 58px;
+  margin: 0 auto;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 20px;
+}
+
+.report-context a {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  color: var(--text);
+  text-decoration: none;
+  font-size: 13px;
+  font-weight: 800;
+}
+
+.report-context a::before,
+.hd .brand::before,
+.topbar .brand::before {
+  width: 10px;
+  height: 10px;
+  flex: 0 0 auto;
+  border-radius: 2px;
+  background: linear-gradient(135deg, var(--accent), var(--blue));
+  box-shadow: 0 0 18px rgba(112, 225, 193, 0.3);
+  content: "";
+}
+
+.report-context span {
+  color: var(--text3);
+  font-family: ui-monospace, "SFMono-Regular", Consolas, monospace;
+  font-size: 10px;
+  font-weight: 800;
+  letter-spacing: 0.1em;
+}
+
+/* Existing report headers. */
+header:not(.top),
+.topbar {
+  border-bottom-color: var(--line) !important;
+  background: rgba(7, 16, 21, 0.9) !important;
+  backdrop-filter: blur(18px);
+}
+
+.hd,
+.topbar-inner {
+  width: min(1220px, calc(100% - 40px)) !important;
+  max-width: none !important;
+  min-height: 58px;
+  padding: 0 !important;
+}
+
+.hd .brand,
+.topbar .brand {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  color: var(--text) !important;
+}
+
+.hd a,
+.action-link {
+  min-height: 34px;
+  display: inline-flex;
+  align-items: center;
+  border: 1px solid var(--line-strong) !important;
+  border-radius: 8px !important;
+  padding: 6px 11px !important;
+  color: var(--text) !important;
+  background: rgba(255, 255, 255, 0.025) !important;
+  box-shadow: none !important;
+}
+
+.hd a:hover,
+.action-link:hover {
+  border-color: var(--accent) !important;
+  color: var(--accent) !important;
+}
+
+.action-link.primary {
+  border-color: var(--accent) !important;
+  color: #071015 !important;
+  background: var(--accent) !important;
+}
+
+header.top {
+  border-bottom-color: var(--line) !important;
+  background: linear-gradient(180deg, rgba(112, 225, 193, 0.07), transparent) !important;
+}
+
+.hero {
+  background: transparent !important;
+  border-bottom-color: var(--line) !important;
+}
+
+.hero h1,
+.grad {
+  background: linear-gradient(120deg, #edf5f7, #70e1c1 58%, #74b9ff) !important;
+  -webkit-background-clip: text !important;
+  background-clip: text !important;
+  -webkit-text-fill-color: transparent !important;
+  color: transparent !important;
+}
+
+h1,
+.section-title,
+.full-name {
+  color: var(--text) !important;
+  font-family: Inter, ui-sans-serif, -apple-system, BlinkMacSystemFont, "Segoe UI", "Noto Sans SC", sans-serif !important;
+  letter-spacing: -0.035em !important;
+}
+
+h2,
+h3,
+h4,
+.prose b,
+.method-node h3,
+.gap-item h3,
+.outcome h3,
+.paper-name,
+.callout strong {
+  color: var(--text) !important;
+}
+
+p,
+li,
+td {
+  color: var(--text2);
+}
+
+.eyebrow,
+.section-kicker,
+.snum,
+.h3n,
+.hero .kicker,
+.stat .v,
+.tag b,
+.toc a:hover,
+.toc a.active,
+.hd .brand b,
+em {
+  color: var(--accent3) !important;
+}
+
+.toc {
+  border-color: var(--line) !important;
+}
+
+.toc a.active,
+.toc a:hover {
+  border-color: var(--accent) !important;
+}
+
+.toc a,
+.toc-label,
+.toc .tt {
+  color: var(--text3) !important;
+}
+
+.card,
+.tile,
+.stat,
+.metric,
+.gap-item,
+.method-board,
+.method-node,
+.claim-column,
+.outcome,
+.scroll,
+.table-wrap,
+figure,
+.figure-frame,
+.diagram,
+pre {
+  border-color: var(--line) !important;
+  background-color: var(--paper) !important;
+  box-shadow: none !important;
+}
+
+.card,
+.tile,
+.stat,
+.metric,
+.gap-item,
+.method-board,
+.method-node,
+.claim-column,
+.outcome,
+.scroll,
+.table-wrap,
+figure,
+.figure-frame,
+.diagram,
+pre,
+.tag,
+code {
+  border-radius: 12px !important;
+}
+
+th,
+thead th {
+  color: var(--text) !important;
+  background: var(--bg4) !important;
+}
+
+th,
+td,
+.report-section,
+.paper-row,
+.evidence-footer,
+figcaption,
+.figure-frame figcaption {
+  border-color: var(--line) !important;
+}
+
+tbody tr:hover td,
+.paper-row:hover {
+  background: rgba(112, 225, 193, 0.035) !important;
+}
+
+code,
+kbd {
+  border-color: var(--line) !important;
+  color: #a9cfff !important;
+  background: var(--bg4) !important;
+}
+
+.keybox,
+.callout {
+  border-color: var(--accent2) !important;
+  background: rgba(112, 225, 193, 0.07) !important;
+}
+
+.callout.warning,
+.wipbox {
+  border-color: var(--yellow) !important;
+  background: rgba(244, 184, 96, 0.08) !important;
+}
+
+.callout.critical,
+.badbox {
+  border-color: var(--red) !important;
+  background: rgba(255, 148, 120, 0.08) !important;
+}
+
+.callout.success,
+.goodbox {
+  border-color: var(--green) !important;
+  background: rgba(83, 209, 139, 0.08) !important;
+}
+
+.metric-value,
+.paper-num,
+.method-index {
+  color: var(--accent3) !important;
+  font-family: ui-monospace, "SFMono-Regular", Consolas, monospace !important;
+}
+
+.method-node {
+  background: var(--bg4) !important;
+}
+
+.method-node::after {
+  color: var(--accent) !important;
+}
+
+.tag.planned {
+  color: var(--text2) !important;
+  background: rgba(255, 255, 255, 0.05) !important;
+}
+
+.figure-frame img,
+figure img {
+  /* Scientific plots keep their native canvas for legibility. */
+  isolation: isolate;
+}
+
+footer,
+.footer {
+  border-color: var(--line) !important;
+  color: var(--text3) !important;
+  overflow-wrap: anywhere;
+}
+
+@media (max-width: 700px) {
+  .report-context-inner,
+  .hd,
+  .topbar-inner {
+    width: min(100% - 24px, 1220px) !important;
+  }
+
+  .report-context span {
+    display: none;
+  }
+
+  .top-actions .secondary {
+    display: inline-flex !important;
+  }
+
+  .hero h1,
+  h1 {
+    font-size: clamp(32px, 10vw, 42px) !important;
+  }
+
+  .doc {
+    display: block !important;
+    width: 100% !important;
+    max-width: 100% !important;
+    min-width: 0 !important;
+  }
+
+  main {
+    width: 100%;
+    min-width: 0 !important;
+    max-width: 100%;
+  }
+
+  .tiles {
+    grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+  }
+
+  .tag,
+  code {
+    overflow-wrap: anywhere;
+  }
+
+  main table {
+    display: block;
+    width: 100% !important;
+    min-width: 0 !important;
+    max-width: 100%;
+    overflow-x: auto;
+    overscroll-behavior-inline: contain;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
+  }
+
+  *,
+  *::before,
+  *::after {
+    transition-duration: 0.01ms !important;
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+  }
+}

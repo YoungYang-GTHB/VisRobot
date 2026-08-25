@@ -1,0 +1,562 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>CRAVE:基于共现状态无监督的进度估计</title>
+<link rel="icon" href="../../favicon.svg" type="image/svg+xml">
+<style>
+:root{
+  --bg:#020010; --bg2:#05001a; --bg3:#0a0024; --panel:rgba(10,0,36,0.72);
+  --border:#1e1a6e; --border2:#3730a3; --text:#e8eaf6; --text2:#9aa2d4; --text3:#5a5e8c;
+  --accent:#7c3aed; --accent2:#5b21b6; --accent3:#a78bfa; --glow:rgba(124,58,237,0.35);
+  --green:#22c55e; --red:#ef4444; --yellow:#eab308; --blue:#818cf8; --grid:rgba(80,40,200,0.08);
+}
+*{margin:0;padding:0;box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI','Noto Sans CJK SC',sans-serif;background:var(--bg);color:var(--text);line-height:1.7;position:relative;overflow-x:hidden}
+body::before{content:'';position:fixed;inset:0;z-index:0;pointer-events:none;background-image:linear-gradient(var(--grid) 1px,transparent 1px),linear-gradient(90deg,var(--grid) 1px,transparent 1px);background-size:42px 42px}
+body::after{content:'';position:fixed;inset:0;z-index:0;pointer-events:none;background:radial-gradient(ellipse 80% 50% at 50% -10%,rgba(79,70,229,0.16) 0%,transparent 70%)}
+.wrap{position:relative;z-index:1;max-width:1180px;margin:0 auto;padding:0 24px;display:grid;grid-template-columns:230px 1fr;gap:40px}
+@media(max-width:900px){.wrap{grid-template-columns:1fr}.toc{display:none}}
+header{position:relative;z-index:1;border-bottom:1px solid var(--border2);background:rgba(5,0,22,0.82);backdrop-filter:blur(10px)}
+.hd{max-width:1180px;margin:0 auto;padding:18px 24px;display:flex;align-items:center;justify-content:space-between;gap:16px}
+.hd .brand{font-weight:700;letter-spacing:.5px}
+.hd .brand b{color:var(--accent3)}
+.hd a{color:var(--text2);text-decoration:none;font-size:13px;border:1px solid var(--border2);padding:6px 12px;border-radius:8px;transition:.2s}
+.hd a:hover{color:var(--text);border-color:var(--accent);box-shadow:0 0 14px var(--glow)}
+.hero{position:relative;z-index:1;text-align:center;padding:56px 24px 24px}
+.hero .kicker{display:inline-block;font-size:12px;letter-spacing:2px;color:var(--accent3);border:1px solid var(--border2);border-radius:20px;padding:5px 14px;margin-bottom:18px;text-transform:uppercase}
+.hero h1{font-size:38px;line-height:1.25;font-weight:800;background:linear-gradient(120deg,#fff,#a78bfa 60%,#7c3aed);-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent;margin-bottom:14px}
+.hero p.sub{color:var(--text2);font-size:16px;max-width:780px;margin:0 auto}
+.hero .meta{margin-top:18px;display:flex;gap:10px;flex-wrap:wrap;justify-content:center}
+.hero .meta span{font-size:12px;color:var(--text2);background:var(--bg3);border:1px solid var(--border);border-radius:7px;padding:5px 11px}
+.toc{position:sticky;top:24px;align-self:start;font-size:13.5px;border-left:1px solid var(--border);padding-left:16px;max-height:calc(100vh - 48px);overflow:auto}
+.toc div{color:var(--text3);font-size:11px;letter-spacing:1.5px;text-transform:uppercase;margin:0 0 10px}
+.toc a{display:block;color:var(--text2);text-decoration:none;padding:5px 0;border-left:2px solid transparent;margin-left:-18px;padding-left:16px;transition:.15s}
+.toc a:hover{color:var(--accent3);border-left-color:var(--accent)}
+main{padding:24px 0 80px;min-width:0}
+section{margin-bottom:46px;scroll-margin-top:24px}
+h2{font-size:24px;font-weight:700;margin-bottom:14px;padding-bottom:8px;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:10px}
+h2 .n{font-size:14px;color:var(--accent3);background:var(--bg3);border:1px solid var(--border2);border-radius:7px;min-width:30px;height:30px;padding:0 7px;display:inline-flex;align-items:center;justify-content:center;flex:none}
+h3{font-size:17px;font-weight:650;margin:24px 0 10px;color:var(--accent3)}
+.pain{font-size:16px;font-weight:700;margin:26px 0 8px;color:#ff9a9a;display:flex;align-items:center;gap:8px}
+.pain .pn{background:rgba(239,68,68,.16);color:#ff8a8a;border-radius:6px;padding:1px 9px;font-size:13px}
+p{margin:10px 0;color:#d6daf2}
+em{color:var(--accent3);font-style:normal;font-weight:600}
+code{background:var(--bg3);border:1px solid var(--border);border-radius:5px;padding:1px 6px;font-size:13px;color:#c7b8ff;font-family:'SF Mono',Menlo,monospace}
+ul{margin:10px 0 10px 22px}li{margin:5px 0;color:#d6daf2}
+.lead{font-size:16px;color:var(--text2)}
+.card{background:var(--panel);border:1px solid var(--border);border-radius:14px;padding:20px 22px;margin:16px 0}
+.callout{border-left:3px solid var(--accent);background:linear-gradient(90deg,rgba(124,58,237,0.10),transparent);border-radius:0 10px 10px 0;padding:12px 18px;margin:16px 0;color:#dfe2f7}
+.callout.ok{border-left-color:var(--green);background:linear-gradient(90deg,rgba(34,197,94,0.10),transparent)}
+.callout.warn{border-left-color:var(--yellow);background:linear-gradient(90deg,rgba(234,179,8,0.10),transparent)}
+figure{margin:18px 0;background:var(--bg2);border:1px solid var(--border);border-radius:14px;overflow:hidden}
+figure img,figure video{width:100%;display:block;background:#000}
+figcaption{padding:11px 16px;font-size:13px;color:var(--text2);border-top:1px solid var(--border)}
+figcaption b{color:var(--accent3)}
+.vgrid{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin:16px 0}
+@media(max-width:680px){.vgrid{grid-template-columns:1fr}}
+.placeholder{margin:18px 0;border:1.5px dashed var(--border2);border-radius:14px;padding:34px 20px;text-align:center;color:var(--text3);background:repeating-linear-gradient(45deg,rgba(124,58,237,0.03),rgba(124,58,237,0.03) 12px,transparent 12px,transparent 24px)}
+.placeholder .ic{font-size:26px;opacity:.5}
+.placeholder .t{color:var(--accent3);font-weight:650;margin:8px 0 4px;font-size:15px}
+.placeholder .d{font-size:13px;color:var(--text2);max-width:620px;margin:0 auto}
+table{width:100%;border-collapse:collapse;margin:16px 0;font-size:13.5px}
+th,td{padding:9px 12px;text-align:left;border-bottom:1px solid var(--border)}
+th{color:var(--accent3);font-weight:600;background:var(--bg3)}
+td{color:#d6daf2}
+tr:hover td{background:rgba(124,58,237,0.05)}
+.tag{display:inline-block;font-size:11px;padding:2px 8px;border-radius:6px;font-weight:600}
+.tag.g{background:rgba(34,197,94,.16);color:#5ee08a}.tag.r{background:rgba(239,68,68,.16);color:#ff8a8a}
+.tag.y{background:rgba(234,179,8,.16);color:#f3d05a}.tag.b{background:rgba(129,140,248,.16);color:#aab4ff}
+.stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:14px;margin:8px 0}
+.stat{background:var(--panel);border:1px solid var(--border);border-radius:12px;padding:16px;text-align:center}
+.stat .v{font-size:24px;font-weight:800;color:var(--accent3)}
+.stat .l{font-size:12px;color:var(--text2);margin-top:4px;line-height:1.4}
+footer{position:relative;z-index:1;border-top:1px solid var(--border);padding:26px 24px;text-align:center;color:var(--text3);font-size:13px}
+.flow{display:flex;flex-wrap:wrap;align-items:stretch;gap:8px;margin:18px 0}
+.flow .node{flex:1;min-width:130px;background:var(--panel);border:1px solid var(--border2);border-radius:11px;padding:12px 10px;text-align:center}
+.flow .node .ix{font-size:11px;color:var(--accent3);font-weight:700;letter-spacing:1px}
+.flow .node .t{font-size:13px;font-weight:650;margin:5px 0 3px;color:#eef0ff}
+.flow .node .d{font-size:11px;color:var(--text2);line-height:1.45}
+.flow .arrow{align-self:center;color:var(--accent);font-size:18px;flex:none}
+@media(max-width:680px){.flow .arrow{transform:rotate(90deg)}.flow{flex-direction:column}.flow .node{min-width:0}}
+.cols2{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin:16px 0}
+@media(max-width:680px){.cols2{grid-template-columns:1fr}}
+.cols2 .col{border-radius:14px;padding:16px 18px;border:1px solid var(--border)}
+.cols2 .col.good{background:linear-gradient(180deg,rgba(34,197,94,0.08),transparent)}
+.cols2 .col.bad{background:linear-gradient(180deg,rgba(234,179,8,0.08),transparent)}
+.cols2 .col h4{font-size:15px;margin-bottom:8px}
+.cols2 .col.good h4{color:#5ee08a}.cols2 .col.bad h4{color:#f3d05a}
+.cols2 .col li{font-size:13.5px}
+a.link{color:var(--accent3);text-decoration:none;border-bottom:1px dashed var(--border2)}a.link:hover{border-color:var(--accent)}
+.latent-stage-figure{background:#07021f}
+.milestone-flow-board{padding:16px;display:grid;gap:14px}
+.milestone-flow-chain{display:grid;grid-template-columns:.82fr auto .82fr auto 1.55fr;gap:12px;align-items:center}
+.milestone-card{border:1px solid rgba(167,139,250,.45);border-radius:10px;background:rgba(12,7,40,.92);overflow:hidden;min-width:0}
+.milestone-card.current{border-color:rgba(34,197,94,.58)}
+.milestone-card.local{border-color:rgba(234,179,8,.62)}
+.milestone-card.goal{border-color:rgba(124,58,237,.72)}
+.milestone-card h4{margin:0;padding:9px 11px;font-size:12.5px;line-height:1.35;color:#eef0ff;border-bottom:1px solid rgba(255,255,255,.08)}
+.milestone-card.current h4{color:#9af0b7}.milestone-card.local h4{color:#f3d46a}.milestone-card.goal h4{color:#d8c8ff}
+.milestone-pair{display:grid;grid-template-columns:1fr 1fr;gap:0;background:#fff}
+.milestone-pair img{width:100%;height:auto;display:block;background:#fff}
+.milestone-single{background:#fff}
+.milestone-single img{width:100%;height:auto;display:block;background:#fff}
+.milestone-labels{display:grid;grid-template-columns:1fr 1fr;background:#f4f2ff;border-top:1px solid rgba(0,0,0,.08)}
+.milestone-labels span{padding:6px 7px;color:#33285f;font-size:10.5px;font-weight:700;text-align:center}
+.milestone-labels.single{grid-template-columns:1fr}
+.milestone-note{padding:9px 11px;font-size:11.5px;line-height:1.45;color:var(--text2);min-height:58px}
+.milestone-arrow{display:grid;gap:6px;justify-items:center;color:#d8c8ff;font-size:20px;font-weight:800;line-height:1}
+.milestone-arrow span{border:1px solid rgba(167,139,250,.42);border-radius:999px;background:rgba(124,58,237,.14);padding:4px 8px;font-size:10.5px;color:#cfc5ff;white-space:nowrap}
+.milestone-output-stack{display:grid;grid-template-columns:1fr 1fr;gap:12px;min-width:0}
+.milestone-flow-caption{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.milestone-flow-caption div{border:1px solid rgba(255,255,255,.08);border-radius:9px;background:rgba(255,255,255,.035);padding:10px 12px}
+.milestone-flow-caption b{display:block;color:#eef0ff;font-size:12px;margin-bottom:3px}
+.milestone-flow-caption span{display:block;color:var(--text2);font-size:11.5px;line-height:1.45}
+@media(max-width:980px){.milestone-flow-chain{grid-template-columns:1fr}.milestone-output-stack{grid-template-columns:1fr}.milestone-arrow{transform:none}.milestone-flow-caption{grid-template-columns:1fr}.milestone-card h4{font-size:12px}}
+</style>
+<link rel="stylesheet" href="../../static/report-theme.css">
+</head>
+<body>
+
+<header><div class="hd">
+  <div class="brand"><b>CRAVE</b> · 方法汇报</div>
+  <a href="../../">← VisRobot · deepdive_kai</a>
+</div></header>
+
+<div class="hero">
+  <span class="kicker">Cross-episode Recurrence as Progress Estimation</span>
+  <h1>CRAVE:基于共现状态无监督的进度估计</h1>
+  <p class="sub">面向观看者的方法汇报:先看清当前监督 value/progress 模型的<b>三个痛点</b>,再看 CRAVE 怎么用"跨 episode 复现 + 簇间转移概率"逐一解决,最后给出<b>效果对比与优缺点</b>。</p>
+  <div class="meta">
+    <span>零训练 · frozen DINOv3-base</span><span>零人工标注</span>
+    <span>跨数据集泛化</span><span>退步信号干净</span>
+  </div>
+</div>
+
+<div class="wrap">
+<nav class="toc">
+  <div>目录</div>
+  <a href="#tldr">TL;DR 关键结论</a>
+  <a href="#pain">1 · 现状与三大痛点</a>
+  <a href="#idea">2 · CRAVE 核心思想</a>
+  <a href="#compare">3 · 效果对比</a>
+  <a href="#mech">4 · 实现原理(milestone 挖矿)</a>
+  <a href="#online">5 · 在线推理(因果)</a>
+  <a href="#summary">6 · 优缺点与选型</a>
+  <a href="#next">7 · 下一步计划</a>
+</nav>
+
+<main>
+
+<!-- ════ TL;DR ════ -->
+<section id="tldr">
+<h2><span class="n">TL;DR</span>关键结论</h2>
+<p class="lead">用监督模型一半的代价,拿到同等或更稳、还能跨任务直接复用的 progress。</p>
+<div class="stats">
+  <div class="stat"><div class="v">零训练</div><div class="l">frozen 特征 + 聚类 + DP,无梯度更新、无人工标注</div></div>
+  <div class="stat"><div class="v">100% vs 52%</div><div class="l">in-distribution 单调性(CRAVE vs 监督 AE),且打平 corr</div></div>
+  <div class="stat"><div class="v">7% vs 45%</div><div class="l">真机 OOD 退步帧占比:CRAVE 稀疏对齐真事件 / AE 弥散</div></div>
+  <div class="stat"><div class="v">0.962 / 0.997</div><div class="l">跨数据集泛化 corr(XVLA 叠衣 / 真实 ALOHA 咖啡),配方逐字不改</div></div>
+</div>
+</section>
+
+<!-- ════ 1. 痛点 ════ -->
+<section id="pain">
+<h2><span class="n">1</span>现状:当前监督 value/progress 模型的三大痛点</h2>
+<p><b>稠密进度模型是干嘛的?</b> AWBC / RL 类训练需要每帧"任务完成到几成"的稠密进度信号,再由进度变化派生出 <span class="tag g">POSITIVE</span>(该学)或 <span class="tag r">NEGATIVE</span>(该避)的动作标签。当前主流做法是<b>监督训练</b>一个 value/progress 头。</p>
+<div class="flow">
+  <div class="node"><div class="ix">数据</div><div class="t">demo / rollout</div><div class="d">相机 + 动作</div></div>
+  <div class="arrow">→</div>
+  <div class="node"><div class="ix">标注 / 奖励</div><div class="t">stage_progress_gt</div><div class="d">人工 / 规则 / reward 派生</div></div>
+  <div class="arrow">→</div>
+  <div class="node"><div class="ix">训练</div><div class="t">pi0-AE value 头</div><div class="d">监督回归(每任务重训)</div></div>
+  <div class="arrow">→</div>
+  <div class="node"><div class="ix">输出</div><div class="t">absolute_value</div><div class="d">+ advantage(P/N)</div></div>
+</div>
+<p style="color:var(--text2);font-size:13.5px">KAI0-AE = 上述监督路线;PI 系(π*0.6-RECAP 等)可用监督进度差或外部奖励派生训练信号,流程类似。</p>
+
+<div class="pain"><span class="pn">痛点 ①</span>AE 输出抖动严重 → POSITIVE/NEGATIVE 评价极不稳定、互相交错</div>
+<p>监督 value 逐帧抖动,导致 AWBC 的正/负标签在同一段动作里来回横跳——学到的是噪声而非真信号。下图 kai0_base <b>ep2302</b>(成功叠衣)的 KAI0-AE 四联图:① absolute_value(进度值)→ ② relative_value(AE 直出、P/N 依据)<b>在 0 附近剧烈抖动、正负翻转 256 次</b> → ③ 二档(pos/neg)分类条<b>红绿满屏交错</b>,④ 三档(加 deadband)仍 churn。同一段成功动作被反复标成 NEGATIVE = 纯噪声。</p>
+<figure>
+  <img loading="lazy" decoding="async" src="assets/pain1_supervised_ae_labels_rollout_r2302.webp" alt="KAI0-AE absolute/relative value 及 P/N 分类(抖动)">
+  <figcaption><b>痛点① · KAI0-AE ep2302</b>:absolute_value / relative_value + 二档·三档 P/N 分类——relative_value 抖动 → 正负逐帧横跳(256 次翻转)。<span style="color:var(--text3)">(备份样例 ep2238 见 assets)</span></figcaption>
+</figure>
+
+<div class="pain"><span class="pn">痛点 ②</span>positive/negative 不够明确——很多地方主观看不出 value 为什么升/降(可解释性差)</div>
+<p>传统 value 在不少帧上升降缺乏可解释性。下面是几条<b>较长 kai0_base episode</b>的 KAI0-AE value + 分类条(绿 POS / 灰 NORMAL / 红 NEG),配相机帧——可直观看到"看不出凭什么升降"的片段。<b>都是成功叠衣 episode,AE 却标 14–23% 为 NEGATIVE = 纯噪声</b>:</p>
+<figure>
+  <video src="assets/supervised_ae_value_rollout_r2238.mp4" controls preload="none"></video>
+  <figcaption><b>KAI0-AE value · kai0_base ep2238</b>(80s,成功 episode):分类条按 <b>relative_value</b> 算,AE 标 NEG 23% / POS 50% 红绿横跳。左相机帧 + 实时标签。<span style="color:var(--text3)">(原始素材,待裁出精彩短片)</span></figcaption>
+</figure>
+<p style="color:var(--text3);font-size:12.5px">注:P/N 分类按 AE 直出的 relative_value(与痛点① 一致),非 Δabsolute_value 差分。</p>
+
+<div class="pain"><span class="pn">痛点 ③</span>叠衣任务末端大概率"突然下跌 → 恢复"</div>
+<p>根因:用<b>相似度度量</b>,折叠动作让画面外观骤变 → 与"已折叠"原型的相似度骤降 → value 假跌,折完才恢复(对折叠过程的相似度不鲁棒)。下面两段叠衣收尾实例直观可见 value <b>突然下跌 → 恢复</b>:</p>
+<figure><video src="assets/pain3_endfold_rollout_r2302.mp4" controls preload="none"></video><figcaption><b>末端实例 · ep2302</b>(1:34 → 末):叠衣收尾段 value 突然下跌 → 恢复。</figcaption></figure>
+<figure><video src="assets/pain3_endfold_rollout_r2238.mp4" controls preload="none"></video><figcaption><b>末端实例 · ep2238</b>(1:10 → 末):同样的末端假跌 → 恢复。</figcaption></figure>
+
+<div class="callout warn"><b>小结:</b>三个痛点(抖动→标签不稳 / 升降不可解释 / 末端假跌)叠加<b>人工标注、循环论证、每任务重训</b>的成本 → 这正是 CRAVE 要解决的。</div>
+</section>
+
+<!-- ════ 2. 核心思想 ════ -->
+<section id="idea">
+<h2><span class="n">2</span>CRAVE 核心思想</h2>
+<h3>2.0 痛点 → CRAVE 怎么解</h3>
+<table>
+<thead><tr><th>痛点</th><th>CRAVE 怎么解</th></tr></thead>
+<tbody>
+<tr><td><b>① AE 抖动 → 正负交错</b></td><td>milestone 阶梯 + 双锚 Viterbi-DP 全局最优 → progress 平滑单调,正负<b>段化稀疏</b>而非逐帧横跳</td></tr>
+<tr><td><b>② 升降不可解释</b></td><td>progress = "在哪个反复出现的 milestone 簇上" → 每次升/降都能<b>指着具体 milestone</b>说清楚</td></tr>
+<tr><td><b>③ 末端相似度假跌</b></td><td>不只看瞬时相似度:转移惩罚 + <b>簇间转移概率</b>(知道"末段不会跳回起始态")→ 压住假跌</td></tr>
+</tbody>
+</table>
+
+<h3>2.1 灵感来源:反复出现 = 任务必经结构</h3>
+<p>同一任务的众多 demo 里,<b>关键 milestone 会在不同 episode 反复出现</b>(抓取→摊开→对折→叠好)。把"跨 episode 的统计重复性"当作无标签的监督信号:<b>反复出现的状态 = 任务必经 milestone</b>。</p>
+<figure>
+  <img loading="lazy" decoding="async" src="assets/recurrence_milestone.webp" alt="同一 milestone 在不同 episode 反复出现">
+  <figcaption><b>反复出现 = 任务必经结构</b>:一个高覆盖的 kai0 簇(任务进度≈0.60,<b>覆盖 50% episodes</b>)—— 左=<b>簇中心解码图</b>(解码"平均 latent"→ 与右侧真实帧一致,证明簇中心是合理的语义平均),右=该状态在 6 条不同 episode(甚至不同布料颜色)里反复出现的真实帧。CRAVE 正是把这种"跨 episode 复现"当作 progress 来源。</figcaption>
+</figure>
+<h3>2.2 三步直觉(全程零训练)</h3>
+<div class="flow">
+  <div class="node"><div class="ix">① 特征</div><div class="t">frozen DINOv3-base</div><div class="d">最优编码器(base&gt;H,相位更纯);每帧 → 768D pooled(冻结,无训练)</div></div>
+  <div class="arrow">→</div>
+  <div class="node"><div class="ix">② 聚类</div><div class="t">找"反复出现的态"</div><div class="d">共享PCA128 → 贝叶斯GMM(自动K)+ 覆盖率≥0.5 → 自动浮现 milestone</div></div>
+  <div class="arrow">→</div>
+  <div class="node"><div class="ix">③ 读出</div><div class="t">双锚 Viterbi-DP</div><div class="d">milestone + 起点/终点锚 → 稠密单调 progress</div></div>
+</div>
+<p style="color:var(--text2);font-size:13.5px">全链无梯度更新:DINOv3-base 冻结 + PCA + 贝叶斯GMM + 双锚 DP,没有任何可学习参数被训练。</p>
+<figure><img loading="lazy" decoding="async" src="assets/bgmm_milestone_overview.webp" alt="贝叶斯GMM 自动浮现的 12 个 milestone:簇中心代表帧 + 每簇 value 分布 + 覆盖率">
+  <figcaption><b>步骤② 的产物:贝叶斯GMM 自动浮现 12 个 milestone(自动定 K,无需预设簇数)</b> —— <b>上排</b>=每个 milestone 的<b>簇中心代表帧</b>(标 <code>v=</code> 该簇成员的进度中位数,从 0.01 抓取 → 0.96 叠好,按进度自动排开);<b>中排</b>=每个簇成员的 <b>T(进度)分布直方图</b>(红线=median → 就用它当该 milestone 的进度值),分布<b>窄而单峰</b> = 同簇的帧确实集中在任务同一阶段(时间纯);<b>下排</b>=每个 mode 的<b>跨 episode 覆盖率</b>(cov%,只保留 ≥50% 的簇 → 过滤偶发态、留下"反复出现的必经 milestone")。这张图正是"② 找反复出现的态 → 自动浮现 milestone + 定进度"的完整可视化。</figcaption>
+</figure>
+
+<h3>2.3 充分利用「簇间转移概率」(直接解痛点③)</h3>
+<p>从 demo 统计"当前 milestone 的下一个最可能是谁"的经验概率 <code>P(next | cur)</code>,折进 DP:它知道"末段几乎不会跳回起始态",于是把相似度造成的末端假跌重罚压住。质量集中在对角线右上(单向前进 + 合法跳级),"中段→起始"近乎为 0。</p>
+<figure>
+  <img loading="lazy" decoding="async" src="assets/transition_matrix.webp" alt="簇间转移概率矩阵">
+  <figcaption><b>经验簇间转移矩阵</b> <code>P(next|cur)</code>:对角线右上为主(任务单向前进),"中段→起始"≈0 → 循环态 alias 被先验重罚。</figcaption>
+</figure>
+
+<h3>2.4 读出:双锚 Viterbi-DP(离线标准)</h3>
+<p>有了 milestone(§2.2)与簇间转移概率(§2.3),最后一步用 <b>Viterbi 动态规划</b>把每帧读出为稠密单调 progress —— 这是 CRAVE 的<b>离线标准读出</b>:</p>
+<p><b>① Viterbi 全局最优路径(含簇间转移概率,压末端假跌)：</b>不是单帧独立决策,而是用全局动态规划把整条轨迹的 milestone 序列一次解出——单帧因光照/褶皱/角度突变导致的抖动,被路径连贯性(转移罚 λ|Δbin|)平滑掉,得到平滑单调的阶梯 progress。DP 里还折进了从 demo 统计的<b>簇间转移概率</b>(见 <a class="link" href="#idea">§2.3</a>,"中段→起始"≈0):它知道"任务只能往前推进、末段几乎不会跳回起始态",于是当某帧突然像起始态(折叠时画面骤变→相似度假跌)也不会跟丢、progress 不暴跌——<b>直接解掉痛点③</b>。</p>
+<figure><img loading="lazy" decoding="async" src="assets/viterbi_mechanism.webp" alt="Viterbi 机制"><figcaption><b>① 无 Viterbi</b>(逐帧最近 milestone,乱抖)<b>→ ② Viterbi</b>(平滑单调 mono≈0.8→0.98);全局 DP 把整条 milestone 序列一次解出、单帧抖动被路径连贯性抹平,叠加簇间转移概率进一步压住末端假跌。</figcaption></figure>
+
+<p><b>② 双锚(替代 per-ep norm01,关键修正)：</b>起点锚=全 ep 首 3 帧均值→固定为 <b>0</b>,终点锚=全 ep 末 3 帧均值→固定为 <b>1</b>;Viterbi 强制首帧=bin0、末帧=bin1.0。这样 raw 值天然 0→1(不再靠 per-ep min-max 拉伸掩盖"达顶失败"),且 DP 为登顶<b>必阶梯经过高 milestone</b>(0.6→0.83→0.96)→ 高 milestone 被激活、中段形状诚实。标准读出<b>不加 smooth、不加 norm01</b>,vs 监督 stage_gt corr <b>0.943</b>、单调 0.981、末值 0.999。</p>
+<figure><img loading="lazy" decoding="async" src="assets/anchor_vs_noanchor.webp" alt="带双锚 vs 不带双锚:两条失败案例与监督 progress_gt 对比">
+  <figcaption><b>② 带双锚 vs 不带双锚 · 两条失败案例(ep2972 / 2360,以监督 progress_gt 为参照)</b>:在 raw 动态范围小的 ep 上,<span style="color:#d98b00"><b>橙=不带双锚 + per-ep norm01</b></span> 按每条自身极值拉伸、把噪声放大成<b>方波</b>(corr <b>0.14 / 0.39</b>);而 <span style="color:#2ca02c"><b>绿=带双锚</b></span> 保持 milestone 绝对尺度、干净贴合 <span style="color:#555"><b>灰=监督 GT</b></span>(corr <b>0.95 / 0.82</b>)。这类难例正是双锚的价值——<b>不靠 per-ep 拉伸、尺度一致、对难例稳健</b>。全 1000 条 ep 上 <b>双锚 mean corr 0.936 vs norm01 0.862</b>:成功 demo 上二者接近(双锚无害),整体差距正来自这条"失败尾巴"。</figcaption>
+</figure>
+
+<p><b>③ 去阶梯 polyline(平滑版)：</b>硬阶梯可再<b>去阶梯</b>成平滑曲线——每个连续 milestone 段取离簇心最近的<b>代表帧</b>钉在簇值,相邻代表帧之间<b>线性连成折线</b>。得到锚在"最典型帧"上的分段线性 ramp(vs 监督 GT corr <b>0.957</b>,更贴平滑 GT)。<b>§5.2 的在线 GRU 蒸馏的正是这条去阶梯 polyline teacher</b>。</p>
+<figure><img loading="lazy" decoding="async" src="assets/polyline_vs_step.webp" alt="去阶梯 polyline vs 硬阶梯 step vs 监督GT · 9 随机 ep">
+  <figcaption><b>③ 去阶梯 polyline vs 硬阶梯 · 9 条随机 ep</b>:<span style="color:#e8830c">橙=监督GT</span>、<span style="color:#7aa8ff">蓝=硬阶梯 step</span>、<span style="color:#d62728">红=代表帧折线 polyline</span>(<b>黑点=各 milestone 段最贴簇心的代表帧锚点</b>)。polyline 把阶梯拉成分段线性 ramp、更贴平滑 GT——折线 vs GT 普遍 ≥ 阶梯 vs GT(如 ep143 0.969&gt;0.951)。这条 polyline 就是 §5.2 在线 GRU 蒸馏的 teacher。</figcaption>
+</figure>
+<p style="color:var(--text2);font-size:13.5px">以上是<b>离线</b>读出(需整条 episode)。真机部署要<b>完全因果、零未来</b>的在线读出 —— 见 §5。</p>
+
+</section>
+
+<!-- ════ 3. 机制(折叠) ════ -->
+<!-- ════ 3. 效果对比 ════ -->
+<section id="compare">
+<h2><span class="n">3</span>效果对比(每条回扣痛点)</h2>
+
+<h3>3.1 in-distribution(监督 AE 的主场)→ 解痛点①</h3>
+<p>同域(kai0)同数据公平对比,kai0_base 折叠成功 ep2302:零训练 CRAVE 与监督 AE 末值同到完成,但 CRAVE <b>更平滑、分类更干净</b> —— 单调率 <b>87% vs 52%</b>,POS/NORMAL/NEG 分类带 CRAVE 成块(绿/灰为主),AE 红碎噪声满布。</p>
+<figure><video src="assets/crave_vs_supervised_ae_full_rollout_r2302.mp4" controls preload="none"></video><figcaption><b>CRAVE vs KAI0-AE 对齐视频 · ep2302</b>(成功叠衣):相机帧 + CRAVE progress / AE value + 分类同步对照。</figcaption></figure>
+<figure><img loading="lazy" decoding="async" src="assets/crave_vs_supervised_ae_value_compare.webp" alt="CRAVE vs AE value+分类对比">
+  <figcaption><b>progress/value 曲线 + 分类带对比</b>:CRAVE progress(绿,单调 87%)vs KAI0-AE value(红,单调 52%)。分类带 绿=pos / 灰=normal / 红=neg —— 成功 episode 理应几乎全绿+灰;<b>AE 下排红碎 = 监督 value 的 POS/NEG 噪声</b>(痛点①③ 的正面对照)。</figcaption>
+</figure>
+
+<h3>3.2 progress 升降可解释 → 解痛点②</h3>
+<p>CRAVE 的每次 progress 升/降都对应明确的动作。下图 ep2302(0:06–1:17 段):<b>铺开 → progress 上升(POSITIVE)</b>、<b>拎起 → progress 下降(NEGATIVE)</b>、平稳保持 → NORMAL —— CRAVE 的升降与动作<b>对齐整齐</b>,主观一眼就能解释 progress 为什么升/降。</p>
+<figure><video src="assets/value_interp_video_rollout_r2302.mp4" controls preload="none"></video>
+  <figcaption><b>CRAVE progress 升降可解释 · ep2302(0:06–1:17)· vs KAI0-AE</b>:左=相机帧 + 实时分类;右上=CRAVE progress(绿升/灰平/红降)+ 分类条,右下=KAI0-AE value + 分类条。CRAVE <b>铺开 progress 升、拎起 progress 降,与动作逐拍对齐</b>(可解释);AE 同段抖动、正负横跳(看不出为何升降)—— 正反对照。</figcaption>
+</figure>
+
+<h3>3.3 跨数据集泛化(配方逐字不改)</h3>
+<p>同一冻结配方套全新数据集:<b>XVLA 叠衣 corr 0.962</b>、<b>真实 ALOHA 咖啡 corr 0.997</b> —— 学的是"跨 demo 重复结构 = 进度"的通用规律,而非单数据集过拟合。配方还进一步扩到 <b>12 个任务(2 域 + 新本体 + 9 个 ALOHA)一个共享 value model,mean corr 0.977</b>(见 §6 复用)。下面两段为 CRAVE 在两个全新数据集上的逐帧 progress + milestone 对齐演示:</p>
+<figure><video src="assets/generalize_coffee_video.mp4" controls preload="none"></video><figcaption><b>真实 ALOHA 咖啡</b>(互联网真实数据,全新长程任务,corr 0.997)。</figcaption></figure>
+<figure><video src="assets/generalize_xvla_video.mp4" controls preload="none"></video><figcaption><b>XVLA 叠衣</b>(全新本体/相机/布料,corr 0.962)。</figcaption></figure>
+</section>
+
+<!-- ════ 4. 实现原理 ════ -->
+<section id="mech">
+<h2><span class="n">4</span>实现原理</h2>
+<div class="callout"><b>最终架构(收口方案,一句话):</b> <b>DINOv3-base</b>(ViT-B/16, 768D, 冻结)→ pooled → <b>PCA→128D</b> ⊕ proprio 位置14(各自 L2,能量 1:1)→ <b>贝叶斯GMM(diag, 自适应K)+ per-mode 覆盖率≥0.5 筛选</b> → 簇成员帧 <b>T 中位数</b> 定 milestone 进度 → <b>双锚 Viterbi</b>(起点锚→0 / 终点锚→1,λ=16,无 smooth、无 norm01)。全消融(编码器/降维/K₀/proprio/聚类器/多峰/读出/端点锚)后收口,vs 监督 stage_gt corr <b>0.943</b>。<span style="color:var(--text3)">下方部分示意图在等价的早期方案(KMeans-K10 / DINOv3-H)下渲染;经交叉验证结论对编码器/聚类器不敏感(cross-encoder corr 0.88,base 比 H 略纯 Tstd 0.195&lt;0.219),定性结论在 base 下不变。</span></div>
+<h3>4.1 milestone 自动浮现</h3>
+<figure><img loading="lazy" decoding="async" src="assets/milestone_repr_frames.webp" alt="代表 milestone 的最近真实帧"><figcaption><b>① 时序直观(最近真实帧)</b>:各代表 milestone 按任务进度排开,各取最近真实帧 —— 一眼看清自动浮现的 milestone 时序。<span style="color:var(--text3)">(图示早期 K=10;最终贝叶斯GMM 浮现 12 个 milestone + 双锚,时序图景一致。)</span></figcaption></figure>
+<figure>
+  <a href="assets/encoder_decoder_arch_hq.webp" target="_blank" rel="noopener"><img loading="lazy" decoding="async" src="assets/encoder_decoder_arch_hq.webp" alt="CRAVE 编解码架构图高清版"></a>
+  <figcaption><b>② 编解码架构</b>:真实帧→DINOv3-base 编码→pooled 768D→PCA128 ⊕ proprio位置(各自L2 1:1)→贝叶斯GMM(自适应K)统一 latent 聚类→去除 state component 得到 image 簇中心→decoder 重建簇中心图。页面内按普通配图宽度展示。<span style="color:var(--text3)">(示意图沿用早期 DINOv3-H/K-Means 版渲染,方案已收口为 base+PCA128+贝叶斯GMM,流程等价。)</span></figcaption>
+</figure>
+<figure><img loading="lazy" decoding="async" src="assets/milestone_repr_decode.webp" alt="10 个代表 milestone 的簇中心解码图"><figcaption><b>③ 可解释 + 簇中心合理(簇中心解码图)</b>:同 10 个 milestone 的<b>簇中心解码图</b>(解码"平均 latent")—— 解码出的中心与上排真实帧一致,<b>证明簇中心是合理的语义平均</b>(medoid 只是最近成员、不能验证中心本身)。聚簇可解释、簇中心合理。</figcaption></figure>
+<h3>4.2 为什么用「簇平均 progress」当 milestone 进度(progress 一致性)</h3>
+<figure><img loading="lazy" decoding="async" src="assets/value_consistency_proof.webp" alt="progress 一致性证明">
+  <figcaption><b>DINO 聚类的 progress 一致性证明</b>:(A)置信度过滤 t-SNE(CQ=0.85),仅高置信点训练降维,低置信点灰色投影,各簇一色;(B)每帧 progress vs 其所在簇平均 progress,相干簇(各色)紧贴对角线,R²=0.84,证明簇均/中位数可以可靠代表 milestone 进度。<span style="color:var(--text3)">(t-SNE 用早期 DINOv3-H/K=10 渲染;一致性 R² 对编码器不敏感,base 下同样成立。)</span></figcaption>
+</figure>
+<p style="color:var(--text2);font-size:13.5px">milestone 如何浮现(§4.1)、簇均 progress 为何可靠(§4.2)是<b>离线挖矿</b>的实现细节;把每帧读出为稠密单调 progress 的<b>双锚 Viterbi</b> 已在 <a class="link" href="#idea">§2.4</a> 讲清。真机部署要<b>完全因果、零未来</b>的在线读出 —— 见 §5。</p>
+</section>
+
+<!-- ════ 5. 在线推理 ════ -->
+<section id="online">
+<h2><span class="n">5</span>在线推理(完全因果 · 零未来)</h2>
+<p class="lead">§2.4 的双锚 Viterbi 是<b>离线</b>读出——它的全部威力来自"知道未来"(全局回溯 + 强制末帧=1)。真机部署要<b>完全因果</b>:每来一帧只用 ≤t 的信息、零延迟输出 progress。CRAVE 的落地做法很直接:把 §2.4 的<b>去阶梯 polyline 读出</b>当 teacher,<b>蒸馏进一个严格因果的 GRU</b>——推理时零未来,却用"学到的未来预期"追平离线。</p>
+
+<h3>5.1 核心矛盾:离线靠未来,在线必须因果</h3>
+<p>离线 Viterbi 靠两件事拿到干净 progress:① 全局回溯把每个转变提前锁定;② "强制末帧=1"反向激活高 milestone 登顶。<b>完全在线两者都没有</b>——只能凭已见帧、当场输出。补"未来"有两条路,我们都试过,最终收口到"学到的未来":</p>
+<div class="cols2">
+  <div class="col bad"><h4>⚠️ 因果先验(零训练,已弃用)</h4><ul>
+    <li>流式 forward-DP + 前向偏置(上升便宜/下降贵)+ 单调 ratchet。</li>
+    <li>无需训练、微秒级;但只靠手写先验补未来 → <b>末段登顶抬不上去</b>(末值封顶 ~0.82、corr 0.86 就到顶)。</li>
+    <li><b>已被右侧 GRU 取代,不再采用</b>(细节见内部实验记录 D2)。</li>
+  </ul></div>
+  <div class="col good"><h4>✅ 学到的未来预期(蒸馏)★</h4><ul>
+    <li>把离线 polyline teacher 蒸馏进单向 GRU。</li>
+    <li>GRU 从几千条同类轨迹里学"这个状态之后通常怎么走"——用学到的先验补滞后、选级、登顶。</li>
+    <li><b>最终方案,corr 追平离线(下 5.2)。</b></li>
+  </ul></div>
+</div>
+<div class="callout warn"><b>为什么不能简单"延迟 L 帧再输出":</b>要给第 t−L 帧,必须先见到第 t 帧 → <b>偷看了 L 帧未来</b>,不是完全在线;且实测 L 越大越差(不强制末帧时高 L 只把"泊 0.5"的错误抹得更平)。完全因果只能 L=0。</div>
+
+<h3>5.2 因果 GRU 蒸馏 polyline teacher ★</h3>
+<p>把离线双锚 Viterbi 的<b>去阶梯 polyline 读出</b>(§2.4 末,代表帧分段线性、平滑 ramp)当 <b>teacher</b>,训一个<b>单向 GRU(结构上严格因果)</b> 当 student 回归它。GRU 见过几千条同类轨迹,内化了"这个状态之后进度通常跳到 X / 平台还剩多久 / 这类轨迹会完成"——用<b>学到的未来预期</b>补上滞后、中段选级、甚至登顶,而<b>推理时零未来</b>。蒸馏 polyline(而非硬阶梯)让 student 输出天然平滑,无需再做后处理平滑。</p>
+<div class="card"><h4>模型架构 · 参数量(在线因果 value 头)</h4>
+<div class="flow">
+  <div class="node"><div class="ix">输入 / 帧</div><div class="t">142D</div><div class="d">img PCA128(DINOv3-base 768D→PCA,L2)⊕ proprio 位置14(标准化+L2,能量 1:1)</div></div>
+  <div class="arrow">→</div>
+  <div class="node"><div class="ix">主干</div><div class="t">2 层单向 GRU · h256</div><div class="d">142→256→256;严格因果,第 t 帧只依赖累积 h<sub>t</sub>(1..t)</div></div>
+  <div class="arrow">→</div>
+  <div class="node"><div class="ix">读出头</div><div class="t">256→128→1 · sigmoid</div><div class="d">progress ∈ [0,1]</div></div>
+</div>
+<ul>
+  <li><b>参数量</b>:GRU 701,952 + head 33,025 = <b>734,977 ≈ 0.735M</b>(ckpt <b>2.94MB</b>);同一模型可<b>跨 12 任务共享</b>(见 §6)。</li>
+  <li><b>推理代价</b>:逐帧复用隐状态、<b>O(1)/帧</b>;完整在线栈 = 一次<b>冻结 DINOv3-base 编码</b>(ViT-B/16 ~86M,跨任务共享)+ 微秒级 GRU 递推。</li>
+  <li><b>训练代价</b>:蒸馏离线 polyline teacher,MSE 回归,2000 train / 300 eval,<b>~2min(1×A100)</b>;milestone 发现本身零训练、零标注。</li>
+  <li><b>效果</b>:留出集(严格未见)corr vs 监督GT <b>0.955 ≥ 离线本身 0.943</b> → gap 归零,还平滑掉了离散阶梯噪声。</li>
+</ul></div>
+<figure><img loading="lazy" decoding="async" src="assets/online_gru_heldout.webp" alt="因果 GRU 留出集">
+  <figcaption><b>因果 GRU(蓝,零未来+warmup)蒸馏「去阶梯 polyline 双锚 Viterbi」teacher(绿)· 6 条 kai 严格留出 ep(img PCA128 ⊕ proprio14,M=10 milestone)</b>:teacher 明显偏离橙色时间对角线——<b>~0.4 处的折叠停留平台</b>(主 milestone)、中段拐点、个别 ep 的再抓回落,正是 CRAVE 相对"朴素时间"的增量;student 平滑贴合(mean corr <b>0.975</b>,首帧 warmup 消除冷启动尖峰、从 0 起步)。同一因果模型可跨 12 任务共享(见 §6)。</figcaption>
+</figure>
+<div class="callout ok"><b>首帧冷启动已修:</b>单向 GRU 在 t=0 时 h₀=0 无时序上下文 → 首帧输出冷启动默认值(跨任务一致的架构性小尖峰)。<b>推理时 warmup</b>(首帧复制 ~20 步前置进 GRU、丢弃预热输出)把首帧 pred 从 0.057→0.009 直接消除,零重训、因果友好。</div>
+
+<h3>5.3 vs 监督 AE:架构代价与优缺点对比</h3>
+<p>报告开头的三大痛点都来自<b>监督 value 头</b>(KAI0-AE):它是一个 3 层 value MLP,挂在<b>完整 pi0 VLA</b>(PaliGemma 2B + SigLIP + action expert,<b>~3B+ 参数</b>)之上——每帧要跑整条 VLA 前向、每个任务要用 GT/reward 重训整套。CRAVE 在线 value 走的是完全相反的路线:<b>冻结共享编码器 + 0.735M 因果小头</b>。</p>
+<figure><video src="assets/online_vs_supervised_ae_rollout_r2238.mp4" controls preload="none"></video>
+  <figcaption><b>同一条成功叠衣 ep2238(严格 held-out,未参与 GRU 训练)· 在线因果 GRU 推理 vs KAI0-AE 监督</b>:上=两条 value 曲线——<b>绿=在线 GRU progress</b>(严格因果逐帧,平滑单调登顶 ~0.98);<b>红=KAI0-AE value</b>(全程抖动,且<b>末端从 0.89 骤跌到 0.08</b> = 相似度末端假跌痛点③,GRU 无此问题);中/下=各自 P/N 分类条(绿 POS / 灰 NORMAL / 红 NEG)。成功 episode 理应几乎无红——<b>在线 GRU neg 12%、正负翻转 18 次</b>,而 <b>KAI0-AE neg 23%、翻转 49 次</b>:同一条轨迹,监督 AE 的分类噪声约 <b>2×</b> 于在线 GRU。<span style="color:var(--text3)">(P/N 各按部署真实口径:GRU 由 Δprogress 派生,AE 用其相对头 relative_advantage 直出。)</span></figcaption>
+</figure>
+<p>逐维度对比:</p>
+<table>
+<thead><tr><th>维度</th><th>KAI0-AE(监督 value 头)</th><th>CRAVE 在线 GRU</th></tr></thead>
+<tbody>
+<tr><td><b>模型 / 参数</b></td><td>value MLP 挂在<b>完整 pi0 VLA</b>(~3B+)</td><td>冻结 DINOv3-base(~86M,共享)+ <b>0.735M</b> 因果 GRU</td></tr>
+<tr><td><b>任务专属可训练量</b></td><td>整套 VLA / value 头<b>每任务重训</b></td><td>仅 <b>0.735M</b> GRU 蒸馏 ~2min,<b>小 ~4000×</b>,可跨 12 任务共享</td></tr>
+<tr><td><b>标注成本</b></td><td>需人工 / 规则 GT 或外部 reward</td><td><b>零人工标注</b>(跨 ep 复现自监督)</td></tr>
+<tr><td><b>每帧推理</b></td><td>跑整条 <b>~3B VLA 前向</b>(重)</td><td>一次 ~86M 编码 + <b>O(1)/帧</b> GRU 递推</td></tr>
+<tr><td><b>时序稳定性</b></td><td>逐帧独立回归、无时序积分 → 抖动(ep2302 正负翻转 256 次)</td><td>单向 GRU 累积 h<sub>t</sub>,<b>平滑单调、正负段化稀疏</b></td></tr>
+<tr><td><b>末端行为</b></td><td>相似度骤变 → <b>末端假跌</b></td><td>转移先验 + 学到登顶,<b>无末端假跌</b></td></tr>
+<tr><td><b>可解释性</b></td><td>黑盒回归标量</td><td>每帧对应<b>具体 milestone</b>,升降可指认</td></tr>
+</tbody>
+</table>
+<div class="cols2">
+  <div class="col good"><h4>✅ CRAVE 在线 GRU 的优势</h4><ul>
+    <li><b>任务专属部分小 ~4000×</b>:0.735M vs ~3B,ckpt 2.94MB,真机 O(1)/帧实时;</li>
+    <li><b>零标注 + 近零训练</b>:milestone 零训练,仅小头蒸馏 2min,<b>完全不动大 VLA</b>;</li>
+    <li><b>跨任务复用</b>:同一头跨 12 任务共享(mean 0.977),demo 少的新任务挂 trunk 即用;</li>
+    <li><b>干净可解释</b>:平滑单调、段化稀疏、每帧对齐 milestone,直接解掉三大痛点;</li>
+    <li><b>严格因果</b>:结构上零未来,不像离线 Viterbi 需整条 episode。</li>
+  </ul></div>
+  <div class="col bad"><h4>⚠️ 代价 / 边界</h4><ul>
+    <li>依赖一个<b>冻结视觉编码器</b>(DINOv3-base)+ 一次性 milestone 发现步骤;</li>
+    <li>需<b>足够多同任务 demo</b>让"复现"显现,否则 milestone 挖不出;</li>
+    <li>末端登顶靠"训练全成功 demo"的先验,<b>真机失败 rollout 可能高估</b>(所有在线法通病);</li>
+    <li>是<b>进度 / value 估计器</b>,不直接产动作——与 VLA 策略<b>解耦互补</b>,非替代。</li>
+  </ul></div>
+</div>
+<div class="callout warn"><b>诚实边界:</b>末端登顶是<b>学出来、更好校准</b>的先验(非硬编码强制);若部署有外部成功 / 终止信号,可作 end-trigger 进一步校准。<b>此前的零训练 forward-DP 档已被 GRU 取代,不再作为并列选项。</b></div>
+</section>
+
+<!-- ════ 6. 优缺点 ════ -->
+<section id="summary">
+<h2><span class="n">6</span>优缺点、适用边界与选型</h2>
+<p class="lead">CRAVE 用"跨 episode 复现 + 簇间转移概率",零训练地把三个痛点逐一解掉——抖动→平滑段化、升降可解释、末端假跌被压住,且跨任务直接复用。</p>
+<div class="cols2">
+  <div class="col good"><h4>✅ 优点</h4><ul>
+    <li><b>零训练零标注</b> —— 省每任务重训与标注成本</li>
+    <li><b>可解释</b> —— 每帧能指着具体 milestone 说清升/降</li>
+    <li><b>跨数据集泛化</b> —— 配方不改套新本体/新任务</li>
+    <li><b>退步信号干净稀疏</b> —— OOD 上对齐真事件</li>
+    <li><b>平滑单调</b> —— 正负段化,不逐帧横跳</li>
+  </ul></div>
+  <div class="col bad"><h4>⚠️ 缺点 / 边界</h4><ul>
+    <li>依赖<b>挖矿域与目标域对齐</b>(挖矿数据要和评估任务同分布)</li>
+    <li>转移概率<b>对正常走势是中性的</b>——只在"同态/循环态假跌"上有用,且须轻权重;<b>跳步检测不行</b></li>
+    <li>milestone 空间形态下<b>完成态读数偏低</b>,需保留一个软 completion bias</li>
+    <li><b>跨任务能力有限</b>:不能只靠文本/单条视频零样本理解任意新任务,通常需要目标任务的一批 demo 来重新浮现 milestone</li>
+    <li>需要<b>足够多的同任务 demo</b>才能让"重复"显现</li>
+  </ul></div>
+</div>
+<h3>何时用 CRAVE / 何时用监督 AE</h3>
+<table>
+<thead><tr><th>场景</th><th>选 CRAVE</th><th>选监督 AE</th></tr></thead>
+<tbody>
+<tr><td>没有 GT/标注、想零成本起步</td><td><span class="tag g">✅</span></td><td>—</td></tr>
+<tr><td>新任务/新本体要快速复用</td><td><span class="tag g">✅ 配方不改</span></td><td>需重训</td></tr>
+<tr><td>真机 rollout 要干净退步信号</td><td><span class="tag g">✅ 稀疏对齐</span></td><td>弥散</td></tr>
+<tr><td>已有大量 GT、只求单数据集极致 MAE</td><td>可选</td><td><span class="tag b">✅ 主场</span></td></tr>
+<tr><td>同任务 demo 很少(重复不显现)</td><td><span class="tag y">⚠️ 慎用</span></td><td><span class="tag b">✅</span></td></tr>
+</tbody>
+</table>
+</section>
+
+<!-- ════ 6. 下一步计划 ════ -->
+<section id="next">
+<h2><span class="n">7</span>下一步计划：从描述 → 预测 → 决策</h2>
+<p class="lead">当前 CRAVE 还是一个"描述器"。下一步是从"看懂"到"能预测、能规划、能决策"——构建一个以 <b>task-aware latent milestone</b> 为核心的世界模型。</p>
+
+<h3>7.1 AWBC + Process Reward (决策与在线优化)</h3>
+<p>有了 task-aware latent milestone 和转移图,下一步是让机器人<strong>能用这个模型做决策</strong>:</p>
+<ul>
+  <li><b>AWBC 离线策略</b>:milestone 天然的 state abstraction——在几十个有语义的状态上学习"当前阶段的最优动作",样本效率远高于像素级 RL;</li>
+  <li><b>Process Reward</b>:CRAVE 的 progress 是稠密进度信号,可进一步转换为 process reward / progress-derived reward;当实际进度落后于转移模型预期时,给出负向训练信号,让策略在线调整;</li>
+  <li><b>闭环迭代</b>:离线学→线上发现差距→收集新数据→改进策略。</li>
+</ul>
+
+<h3>7.2 Latent Milestone World Model -- Recurrence Latent Milestone Probability Graph (milestone 转移概率模型)</h3>
+<p>这一节把两件事合在一起:先把 <b>latent milestone</b> 定义为世界模型里的离散状态,再在这些状态之间统计 <b>Recurrence Latent Milestone Probability Graph</b>。也就是说,CRAVE 不是预测下一帧像素,而是预测“任务接下来更可能进入哪个 latent milestone”。</p>
+<p>现有世界模型通常卡在两个极端之间:</p>
+<ul>
+  <li><b>Naive pixel-level</b>:预测下一帧像素,绝大部分像素对任务无意义,计算浪费且不抽象;</li>
+  <li><b>"Physical state" 声称</b>(如 JEPA):声称学到了物理表征,但没有机制保障——模型可以"作弊"走捷径而不真正理解任务结构;</li>
+  <li><b>3D/point-based</b>:深度噪声大、遮挡不稳定,且缺乏任务相关语义——它知道物体在哪,但不知道"这个状态在任务中意味着什么"。</li>
+</ul>
+<p>CRAVE 采用中间路线:用 DINOv3-base 视觉语义、14D 本体位置和跨 episode 共现聚类共同定义 <b>task-aware latent milestone</b>。</p>
+<ul style="margin-top:8px">
+  <li><b>视觉基座</b>:DINOv3-base(768D pooled → PCA128,隐含分割/深度) → 提供<strong>视觉语义</strong></li>
+  <li><b>本体状态</b>:14D 关节位置(与 img 各自 L2、能量 1:1)拼接 → 注入<strong>自身姿态感知</strong></li>
+  <li><b>共现聚类</b>:贝叶斯GMM(自适应K)+ 覆盖率≥0.5,将"任务中反复按顺序出现的状态"归为 milestone → 注入<strong>任务语义</strong></li>
+</ul>
+<p>三者融合为一个 142D(img PCA128 ⊕ 位置14)的联合 latent 特征空间 → <b>latent milestone(任务阶段压缩表征)</b>。当每一帧都能通过 Viterbi 读出为一个 latent milestone 后,大规模 episode 就变成 latent milestone 序列;在这些序列上统计 <b>P(milestone<sub>t+1</sub> | milestone<sub>t</sub>, a<sub>t</sub>)</b>,就得到 milestone 转移概率图。</p>
+<figure>
+  <img loading="lazy" decoding="async" src="assets/transition_probability_network.svg" alt="CRAVE 簇间转移概率网络示意图">
+  <figcaption><b>簇间转移概率示意</b>:把 milestone 看作离散任务 milestone,从当前 milestone 向候选后继 milestone 连边,边上数值是从 demo 统计得到的经验概率 <code>P(next milestone | current milestone)</code>。粗线表示高概率前进路径,红线表示低概率回退/异常路径。图中用 3 层示意一段短期预测链。</figcaption>
+</figure>
+
+<p>基于簇间转移概率可以得到两类下一 milestone:<b>Greedy Milestone</b> 在整张 milestone graph 上用 Viterbi / max-product 搜索通向完成态的最高概率路径,再取这条路径上的下一步 latent prototype 作为子目标提示;<b>Max-Probability Milestone</b> 则从当前 milestone 出发,直接取一步转移概率最大的 <code>argmax P(milestone<sub>t+1</sub>|milestone<sub>t</sub>)</code>,用于短期预测和异常检测。</p>
+<figure class="latent-stage-figure">
+  <div class="milestone-flow-board">
+    <div class="milestone-flow-chain" aria-label="CRAVE latent milestone prediction flow">
+      <div class="milestone-card current">
+        <h4>Current observation · real frame</h4>
+        <div class="milestone-single">
+          <img loading="lazy" decoding="async" src="assets/milestone_flow/m8_real.webp" alt="milestone #8 最近真实帧">
+        </div>
+        <div class="milestone-labels single"><span>real frame</span></div>
+        <div class="milestone-note">当前真实观测作为输入,先进入 DINOv3-base + 14D state 编码。</div>
+      </div>
+      <div class="milestone-arrow">→<span>encode + cluster</span></div>
+      <div class="milestone-card current">
+        <h4>Current milestone center · milestone #8</h4>
+        <div class="milestone-single">
+          <img loading="lazy" decoding="async" src="assets/milestone_flow/m8_decode.webp" alt="milestone #8 簇中心解码图">
+        </div>
+        <div class="milestone-labels single"><span>decoded center</span></div>
+        <div class="milestone-note">编码后的 latent 被归入当前 milestone 簇,其簇中心可解码为可视化 prototype。</div>
+      </div>
+      <div class="milestone-arrow">→<span>Milestone graph + Viterbi</span></div>
+      <div class="milestone-output-stack">
+        <div class="milestone-card goal">
+          <h4>Greedy Milestone · #13</h4>
+          <div class="milestone-single">
+            <img loading="lazy" decoding="async" src="assets/milestone_flow/m13_decode.webp" alt="milestone #13 簇中心解码图">
+          </div>
+          <div class="milestone-labels single"><span>decoded center</span></div>
+          <div class="milestone-note">Viterbi / max-product 完成路径上的下一 milestone。</div>
+        </div>
+        <div class="milestone-card local">
+          <h4>Max-Probability Milestone · #17</h4>
+          <div class="milestone-single">
+            <img loading="lazy" decoding="async" src="assets/milestone_flow/m17_decode.webp" alt="milestone #17 簇中心解码图">
+          </div>
+          <div class="milestone-labels single"><span>decoded center</span></div>
+          <div class="milestone-note">一步转移概率最大的候选 milestone。</div>
+        </div>
+      </div>
+    </div>
+    <div class="milestone-flow-caption">
+      <div><b>Greedy Milestone</b><span>在 milestone graph 上用 Viterbi / max-product 求最大完成概率路线,把路线上的下一 milestone 的 latent prototype 作为 VLA 子目标提示。</span></div>
+      <div><b>Max-Probability Milestone</b><span>从当前 milestone 出发,按 <code>argmax P(milestone<sub>t+1</sub>|milestone<sub>t</sub>)</code> 选择一步概率最大的后继,用于短期预测和异常检测。</span></div>
+    </div>
+  </div>
+  <figcaption><b>Latent milestone 预测能力</b>:这里只抽取 #8/#13/#17 三个 milestone 示意流程。当前真实帧与当前簇中心拆开展示:先由 real frame 编码并聚类得到 current milestone center,再基于该簇中心在 Recurrence Latent Milestone Graph 上分别得到 Greedy Milestone 与 Max-Probability Milestone。两个 next-milestone 候选只展示 decoded center,表示可直接作为可审查的 latent prototype。</figcaption>
+</figure>
+
+<h3>7.2.1 下一 milestone 的可审查解码 — 归档两套解码方案</h3>
+<p>预测出的下一 milestone 是一个 <b>latent prototype</b>,可解码成图像供人审查。我们在多种解码器中<b>只保留两套忠实(非幻觉)方案做归档</b>,其余已淘汰(GAN 会凭空编造细节 / GDL 与再编码一致性损失训练失败或产生对抗噪声 / 检索式不展示模型自身预测):</p>
+<ul style="margin-top:8px">
+  <li><b>L1(高一致性)</b>:确定性回归到条件均值——同一 latent 永远解出同一张图、绝不幻觉,但偏软(re-encode cos 0.33 / sharpness 194)。</li>
+  <li><b>flow(最好效果)★</b>:条件 flow-matching 像素解码器,在真实图像分布内采样——<b>锐利且忠实</b>(re-encode cos <b>0.69</b> / sharpness 493),结构上无法产生对抗垃圾;gf3 八卡扫参(base 96/128/160)胜出。</li>
+</ul>
+<figure>
+  <img loading="lazy" decoding="async" src="assets/selfrecon_decoder_compare.webp" alt="同一原始帧的两套归档解码方案对比">
+  <figcaption><b>同一原始帧 → DINOv3-base 编码 → 解码</b>(自重建上界):上=真实帧,中=L1(确定均值,高一致但软),下=flow(生成,锐+忠实)。两套归档方案在<b>同一批帧</b>上直接对照 —— flow 明显复现衣物形状/颜色/褶皱与夹爪位置;GAN 及其他方案已淘汰。</figcaption>
+</figure>
+<div class="latent-decoder-videos" style="display:flex;gap:14px;flex-wrap:wrap">
+  <figure style="flex:1;min-width:300px">
+    <video src="assets/prod_milestone_l1.mp4" controls preload="none"></video>
+    <figcaption><b>方案① L1 解码(高一致性)· ep1819</b>:左=真实帧;右上=PRED milestone+1 → L1 decode,右下=TRUE milestone+1 → L1 decode。确定均值、稳定不幻觉,但偏软。</figcaption>
+  </figure>
+  <figure style="flex:1;min-width:300px">
+    <video src="assets/prod_milestone_flow.mp4" controls preload="none"></video>
+    <figcaption><b>方案② flow 解码(最好效果)★ · ep1819</b>:同一 episode、同一 PRED/TRUE milestone+1 布局,<b>仅解码器不同</b> —— flow 明显更锐利、更忠实。</figcaption>
+  </figure>
+</div>
+<p style="color:var(--text3);font-size:12.5px">两段视频<b>逐字保持同一提示与布局(同一 episode、同一 milestone+1 语义、同一面板文字)</b>,只替换解码器,便于把差异直接归因到解码方案本身。归档到此为止:<b>仅 L1 与 flow 两套</b>,其余淘汰。</p>
+
+<h3>7.3 与 VLA 架构结合: CRAVE + VLA → LMWAM</h3>
+<p>CRAVE 可以和通用 VLA 策略结合成 <b>LMWAM (Latent Milestone World Action Model)</b>:CRAVE 负责从真实 demo 中发现 latent milestone、预测下一 milestone 并给出转移概率,VLA 负责在语言、视觉历史与机器人状态条件下完成动作生成。这样把“世界模型的 milestone 预测”和“策略模型的动作执行”解耦,避免把未来目标强行生成成像素图。</p>
+<figure>
+  <img loading="lazy" decoding="async" src="assets/rpvla_arch.webp" alt="RPVLA Recurrence Prompt Vision Language Action Model 架构草图">
+  <figcaption><b>RPVLA (Recurrence Prompt Vision Language Action Model)</b>:这张图表达的是 CRAVE 如何作为 recurrence prompt 前端增强 VLA/PI07 类策略:概率/milestone 提示进入 VLM context,下一 milestone 的 latent prototype 经 subgoal adapter 投到 Action Expert conditioning stream,由 VLM backbone + Action Expert 生成 action chunk。</figcaption>
+</figure>
+<div class="card"><h4>CRAVE 对 PI07 类流程的额外价值</h4><ul>
+  <li><b>子任务指令自动生成</b>:按 milestone 语义排序形成“先A再B后C”的任务链,减少人工拆子任务。</li>
+  <li><b>任务元数据(质量标签)</b>:用稠密 progress 和 relative progress delta 生成质量/进度标签,替代手工评分。</li>
+  <li><b>更优子目标来源</b>:milestone 来自真实操作数据,可作为 BAGEL 子目标图像路线之外的更稳选择。</li>
+  <li><b>快速适配新任务</b>:采集目标任务 demo → CRAVE 挖结构 → VLA/PI07 类策略复用这些结构化提示。</li>
+</ul></div>
+<div class="callout warn"><b>Viterbi 的边界:</b>Viterbi 本质是动态规划解码方法,严格依赖一阶马尔可夫、观测独立、参数时不变和最优子结构等 HMM 假设。真实机器人数据往往存在长历史依赖、多状态共同影响观测、转移概率随 milestone / 策略漂移而变化等问题,因此 Viterbi 更适合作为稳定的离线解码器和伪标签生成器,而不是最终世界模型本身。下一步可以用 Viterbi 解出的 latent milestone 序列、转移概率和轨迹结果训练一个可学习的 <b>Latent Milestone World Model</b>,让模型从数据中学习更长程、更非马尔可夫的 milestone 动力学。</div>
+<figure>
+  <img loading="lazy" decoding="async" src="assets/lswam_arch.webp" alt="LMWAM Latent Milestone World Action Model 架构图">
+  <figcaption><b>LMWAM 架构图</b>:新的 LMWAM 将 CRAVE/Viterbi 产出的 latent milestone 数据进一步用于训练 Latent Milestone World Model,再与 VLA 的 perception-language-action 主干结合。相比只在图上做 Viterbi 搜索,LMWAM 的目标是学习可泛化的 latent milestone dynamics,并把下一 milestone 的 latent prototype / transition probability 作为策略执行的结构化条件。</figcaption>
+</figure>
+<div class="card"><h4>LMWAM 中 CRAVE 给 VLA 的输入</h4><ul>
+  <li><b>Latent milestone subgoal</b> → Action Expert 条件输入<br><span style="color:var(--text3)">下一 milestone 的簇中心 latent prototype 作为子目标提示,不依赖 BAGEL 或其他图像生成器。</span></li>
+  <li><b>Transition probability</b> → VLM context / 置信度提示<br><span style="color:var(--text3)">把“当前 milestone、候选 next milestone、路径概率”作为可解释的规划上下文注入 VLA。</span></li>
+</ul></div>
+<p style="margin-top:12px">简单说: <b>LMWAM = CRAVE 的 latent milestone world model + VLA 的 action model</b>。CRAVE 不替代 VLA,而是为 VLA 提供可审计、可规划、来自真实数据的 latent milestone 级提示;同时它也能为 PI07 类训练流程提供子任务指令、任务质量标签与规划先验。</p>
+
+<h3>7.4 为什么要这样做</h3>
+<div class="cols2">
+  <div class="col good"><h4>🎯 核心价值</h4><ul>
+    <li><b>非两端</b>:CRAVE 的 latent milestone 既不是过细的像素,也不是无保障的"物理",而是任务语义中介——<b>看得见、分得开、预测得了</b></li>
+    <li><b>全自动</b>:从原始操作视频到世界模型,不需要人工标注/奖励设计/任务编程——数据驱动</li>
+    <li><b>可解释</b>:milestone 对应可理解的任务阶段,转移图可审计——"为什么决策?因为模型预测有80%概率下一步是这个"</li>
+    <li><b>可迁移</b>:视觉基座(DINOv3)和共现聚类机制跨本体跨场景复用</li>
+  </ul></div>
+  <div class="col bad"><h4>📅 时间线</h4><ul>
+    <li><b>已完成</b>:CRAVE v2.4 多域 milestone 挖掘 + progress 解码 + 跨域推理 ✓</li>
+    <li><b>2026 Q3</b>:多模态融合 + Recurrence Latent Milestone Graph 首版</li>
+    <li><b>2026 Q4</b>:AWBC 离线策略原型</li>
+    <li><b>2027 H1</b>:Process Reward 在线闭环</li>
+  </ul></div>
+</div>
+</section>
+
+</main>
+</div>
+
+<footer>CRAVE 方法汇报 · 零训练跨 episode 复现度 → milestone → 稠密 progress · VisRobot / deepdive_kai</footer>
+</body>
+</html>

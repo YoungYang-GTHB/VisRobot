@@ -1,0 +1,303 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="Actionable Futures 论文证据报告：预测未来表征何时真正约束 VLA 控制。">
+  <title>Actionable Futures · VLA 预测条件证据报告</title>
+  <link rel="icon" href="data:,">
+  <link rel="stylesheet" href="styles.css">
+  <link rel="stylesheet" href="../../static/report-theme.css">
+</head>
+<body>
+  <header class="topbar">
+    <div class="topbar-inner">
+      <a class="brand" href="#decision">
+        <strong>Actionable Futures</strong>
+        <span>论文证据报告 · 2026-08-13</span>
+      </a>
+      <div class="top-actions">
+        <a class="action-link secondary" href="../../">项目首页</a>
+
+      </div>
+    </div>
+  </header>
+
+  <section class="hero" id="decision">
+    <div class="hero-inner">
+      <div>
+        <p class="eyebrow">Audited evidence brief</p>
+        <h1>Actionable Futures</h1>
+        <p class="full-name">预测未来表征何时真正约束 Vision–Language–Action 控制？</p>
+        <p class="hero-summary">
+          论文已经从“MINT-VLA 是否提升 π0.5”改写为一个更完整的问题：未来表征可预测、训练 package 有效、
+          策略使用条件内容、以及具体组件产生收益，是四个彼此独立的命题，而不是逐级必需的证据阶梯。当前最强正证据来自 released LaWAM：
+          固定 checkpoint 下，episode-matched condition 为 94.00%，同任务 shuffled 内容为 40.33%。与此同时，MINT-VLA
+          和 PredictiveActionAdapter 则表明，在当前审计设置中，表示预测成立并不自动转化成可复制控制收益。
+          TG4 正在做来源分解，完成前不归因。
+        </p>
+      </div>
+      <aside class="hero-status" aria-label="项目状态">
+        <h2>当前证据状态</h2>
+        <div class="status-list">
+          <div class="status-row"><span>核心问题</span><strong>预测内容何时可用于控制</strong></div>
+          <div class="status-row"><span>已接受证据</span><strong>TG1A fixed-checkpoint content use</strong></div>
+          <div class="status-row"><span>未完成门槛</span><strong>TG4 source decomposition · 6/18 train</strong></div>
+          <div class="status-row"><span>论文构建</span><strong>9 页主文 · 17 页 PDF</strong></div>
+        </div>
+      </aside>
+    </div>
+  </section>
+
+  <div class="shell">
+    <nav class="toc" aria-label="页面目录">
+      <p class="toc-label">报告目录</p>
+      <a href="#summary">01 · 核心结论</a>
+      <a href="#question">02 · 命题—证据矩阵</a>
+      <a href="#method">03 · 三种接口</a>
+      <a href="#evidence">04 · 已完成证据</a>
+      <a href="#interpretation">05 · 论文主张边界</a>
+      <a href="#limitations">06 · 未完成问题</a>
+      <a href="#submission">07 · 写作与投稿</a>
+      <a href="#appendix">技术附件</a>
+    </nav>
+
+    <main>
+      <section class="report-section" id="summary">
+        <p class="section-kicker">01 · Executive summary</p>
+        <h2 class="section-title">现在真正取得了什么结论</h2>
+        <p class="section-lead">
+          我们不再把所有结果压缩成“world model 有效或无效”。证据显示：released LaWAM checkpoint 强烈依赖特定的
+          episode-matched predicted condition；但 MINT-VLA 和 PredictiveActionAdapter 都没有通过独立 matched-seed 方法增益门槛。
+          因而论文的核心是区分可预测性、控制效用、内容因果性和组件来源，而不是包装一个统一正结果。
+        </p>
+        <div class="metric-grid">
+          <article class="metric">
+            <div class="metric-value positive">+53.67 pp</div>
+            <div class="metric-label">LaWAM normal−shuffled；95% CI [+36.08,+68.58]，六任务全部为正。</div>
+          </article>
+          <article class="metric">
+            <div class="metric-value negative">−8.58 pp</div>
+            <div class="metric-label">MINT-VLA 相对三种子 matched no-hint；95% CI [−11.47,−5.75]。</div>
+          </article>
+          <article class="metric">
+            <div class="metric-value neutral">+1.94 pp</div>
+            <div class="metric-label">PredictiveActionAdapter matched-seed 均值；95% CI [−5.78,+12.75]。</div>
+          </article>
+          <article class="metric">
+            <div class="metric-value">12.50%</div>
+            <div class="metric-label">420,238 个 recurrence pairs 中落在 36-action executed prefix 内的比例。</div>
+          </article>
+        </div>
+        <div class="callout success">
+          <strong>当前最强结论：</strong>一个 released LaWAM checkpoint 的高成功率强烈依赖 episode-matched predicted
+          condition；TG1A 的 paired shuffled、null 和 persistence 干预共同支持这一点。不同 episode 的 shuffle 也可能破坏
+          scene coherence 或产生分布外条件，因此该结果不能单独证明 endpoint 语义本身是原因，也不能归因到某个训练组件。
+        </div>
+      </section>
+
+      <section class="report-section" id="question">
+        <p class="section-kicker">02 · Claim–evidence matrix</p>
+        <h2 class="section-title">四个问题独立回答不同命题</h2>
+        <div class="gap-grid">
+          <article class="gap-item">
+            <h3>1. Predictability</h3>
+            <p>预测 latent 是否优于 persistence、错误动作或 masked action？</p>
+            <div class="verdict">只证明未来表示被学到。</div>
+          </article>
+          <article class="gap-item">
+            <h3>2. Matched utility</h3>
+            <p>candidate 与独立训练的 baseline 在相同 training seeds 下是否提高闭环成功率？</p>
+            <div class="verdict">必须纳入 baseline training variation。</div>
+          </article>
+          <article class="gap-item">
+            <h3>3. Content use</h3>
+            <p>固定 checkpoint 和场景后，正确内容是否优于 shuffled、null 与 persistence？</p>
+            <div class="verdict">识别策略是否使用特定内容。</div>
+          </article>
+          <article class="gap-item">
+            <h3>4. Source attribution</h3>
+            <p>pretraining、auxiliary shaping、inference conditioning 和 interaction 各自贡献多少？</p>
+            <div class="verdict">TG4 完成前保持 unresolved。</div>
+          </article>
+        </div>
+        <div class="callout">
+          <strong>不是线性阶梯：</strong>训练 package 可能通过表征塑形获益而在推理时忽略 condition；固定 checkpoint 也可能依赖
+          condition，却没有优于 matched no-WM training。需要哪类证据取决于论文正在提出哪类 claim。
+        </div>
+        <div class="callout">
+          <strong>时间契约：</strong>released LaWAM 的 H=E=36，目标位于 offset 35；历史 local setup 的 H=50、E=36；
+          recurrence milestone 平均位于 117.45 frames 之后。这个差异是已测量事实，但“时间错位导致无效”仍只是待验证解释。
+        </div>
+      </section>
+
+      <section class="report-section" id="method">
+        <p class="section-kicker">03 · Predictive interfaces</p>
+        <h2 class="section-title">论文比较的三种条件位置</h2>
+        <div class="method-board" aria-label="三种未来条件接口">
+          <div class="method-row">
+            <article class="method-node">
+              <div class="method-index">01</div>
+              <h3>LaWAM endpoint grid</h3>
+              <p>预测完整 future visual grid，并与当前 grid、VLM tokens 一起进入 flow action expert。</p>
+            </article>
+            <article class="method-node">
+              <div class="method-index">02</div>
+              <h3>MINT-VLA token</h3>
+              <p>在当前 π0.5 编码器空间预测 variable-horizon milestone，并压缩为一个 VLM prefix token。</p>
+            </article>
+            <article class="method-node">
+              <div class="method-index">03</div>
+              <h3>PredictiveActionAdapter</h3>
+              <p>从当前 grid 与 noisy action proposal 预测 future-grid residual，再逐 action token 注入零初始化修正。</p>
+            </article>
+            <article class="method-node">
+              <div class="method-index">04</div>
+              <h3>Causal interventions</h3>
+              <p>用 shuffled、null、persistence、zero route 和 masked action 分别测试内容、路径与动作条件。</p>
+            </article>
+          </div>
+          <div class="deploy-row">
+            <strong>共同原则</strong>
+            <span>representation metric、单 seed 增益或 public checkpoint 分数都不能替代 matched utility 与 content-use gate。</span>
+          </div>
+        </div>
+
+        <h3 class="subhead">PredictiveActionAdapter 为什么仍是架构贡献</h3>
+        <p>
+          同一个 adapter 在训练时调用两次：clean expert action chunk 产生 future-grid prediction loss；noisy flow proposal
+          产生逐动作 residual route。推理时没有 clean action，adapter 在每个 denoising step 上使用当前 proposal 重新预测并修正。
+          inherited visual features stop-gradient，route 输出层严格零初始化，因此初始策略值与原 π0.5 完全一致。该设计成立且只增加
+          0.50% 参数，但这里的“保持”只成立于初始化时；训练后策略会改变。当前证据不支持稳定控制增益、可用未来动力学或正确内容因果性。
+        </p>
+      </section>
+
+      <section class="report-section" id="evidence">
+        <p class="section-kicker">04 · Completed evidence</p>
+        <h2 class="section-title">正向证据与负向边界</h2>
+
+        <h3 class="subhead">Released LaWAM：策略依赖 episode-matched predicted condition</h3>
+        <div class="table-wrap">
+          <table>
+            <thead><tr><th>固定 checkpoint 条件</th><th>Success</th><th>Normal−control</th><th>95% CI</th><th>结论</th></tr></thead>
+            <tbody>
+              <tr><td>Normal predicted grid</td><td class="positive number">94.00%</td><td>—</td><td>—</td><td><span class="tag complete">reference</span></td></tr>
+              <tr><td>Within-task shuffled</td><td>40.33%</td><td class="positive number">+53.67 pp</td><td>[+36.08,+68.58]</td><td><span class="tag complete">content use</span></td></tr>
+              <tr><td>Null grid</td><td>35.17%</td><td class="positive number">+58.83 pp</td><td>[+36.83,+79.50]</td><td><span class="tag complete">route contribution</span></td></tr>
+              <tr><td>Persistence</td><td>24.42%</td><td class="positive number">+69.58 pp</td><td>[+48.00,+87.25]</td><td><span class="tag complete">beyond persistence</span></td></tr>
+            </tbody>
+          </table>
+        </div>
+        <p>每个条件包含同一组 1,200 episodes；normal−shuffled 的六项任务效应为 +17.0、+61.0、+67.0、+37.5、+64.5 和 +75.0 pp。</p>
+
+        <h3 class="subhead">Cadence：没有识别出 local-WM 特异响应</h3>
+        <div class="table-wrap">
+          <table>
+            <thead><tr><th>Checkpoint</th><th>E=36</th><th>E=50</th><th>Difference-in-differences</th><th>判定</th></tr></thead>
+            <tbody>
+              <tr><td>Future-off</td><td>91.50%</td><td>88.42%</td><td rowspan="2">+1.42 pp；95% CI [−3.00,+5.92]</td><td rowspan="2"><span class="tag invalid">gate rejected</span></td></tr>
+              <tr><td>Local-WM</td><td>88.08%</td><td>86.42%</td></tr>
+            </tbody>
+          </table>
+        </div>
+        <p>该 panel 只有一个 training seed，也没有正确内容干预，因此不能证明 LMWM 普遍无效或时间错位是原因；其区间仍允许该协议下最高约 +5.92 pp 的 local-WM-specific effect。</p>
+
+        <h3 class="subhead">MINT-VLA：预测成立，matched control 退化</h3>
+        <p>在 480 个 held-out episodes 上，future-feature cosine 为 0.8134，persistence 为 0.7479；这一结果只建立可预测性。</p>
+        <div class="table-wrap">
+          <table>
+            <thead><tr><th>条件</th><th>三种子 macro</th><th>相对 no hint</th><th>95% CI</th><th>判定</th></tr></thead>
+            <tbody>
+              <tr><td>No hint</td><td>79.39%</td><td>—</td><td>—</td><td><span class="tag complete">matched baseline</span></td></tr>
+              <tr><td>Offline absolute token</td><td>75.44%</td><td class="negative">−3.94 pp</td><td>[−6.58,−0.97]</td><td><span class="tag invalid">rejected</span></td></tr>
+              <tr><td>MINT-VLA</td><td>70.81%</td><td class="negative">−8.58 pp</td><td>[−11.47,−5.75]</td><td><span class="tag invalid">all tasks regress</span></td></tr>
+            </tbody>
+          </table>
+        </div>
+
+        <h3 class="subhead">PredictiveActionAdapter：fixed-A0 正结果没有独立复制</h3>
+        <div class="table-wrap">
+          <table>
+            <thead><tr><th>Training seed</th><th>Matched A0</th><th>Adapter</th><th>Adapter−A0</th><th>任务级风险</th></tr></thead>
+            <tbody>
+              <tr><td>1000</td><td>69.00%</td><td>82.42%</td><td class="positive number">+13.42 pp</td><td>六任务均为正</td></tr>
+              <tr><td>1001</td><td>83.58%</td><td>78.08%</td><td class="negative number">−5.50 pp</td><td>Rank-size −13.0；Stack-3 −9.0</td></tr>
+              <tr><td>1002</td><td>83.42%</td><td>81.33%</td><td class="negative number">−2.08 pp</td><td>Rank-RGB −5.5</td></tr>
+              <tr><td><strong>Equal-seed mean</strong></td><td>78.67%</td><td>80.61%</td><td class="neutral number">+1.94 pp</td><td>95% CI [−5.78,+12.75]</td></tr>
+            </tbody>
+          </table>
+        </div>
+        <div class="callout warning">
+          三项核心门槛均未通过：matched-seed utility 的区间跨零；多个 cell 违反预设 −5 pp task-level tolerance；
+          normal−reversed content 仅 +0.53 pp，95% CI [−2.14,+3.08]，Holm p=0.534。
+        </div>
+      </section>
+
+      <section class="report-section" id="interpretation">
+        <p class="section-kicker">05 · Claim boundary</p>
+        <h2 class="section-title">论文可以说什么，不能说什么</h2>
+        <div class="claim-grid">
+          <article class="claim-column allowed">
+            <h3>证据支持</h3>
+            <ul>
+              <li>Released LaWAM checkpoint 强烈依赖 episode-matched predicted condition。</li>
+              <li>MINT-VLA 学到了优于 persistence 的 held-out milestone 表征。</li>
+              <li>PredictiveActionAdapter 的 future-target prediction 对 expert action 有小而可检测的敏感性。</li>
+              <li>PredictiveActionAdapter 是低侵入、初始化时保持 base function 的 proposal-conditioned 控制接口。</li>
+              <li>未来表征可预测并不保证 independently matched control utility。</li>
+              <li>训练 seed 与任务级退化必须与宏平均并列报告。</li>
+            </ul>
+          </article>
+          <article class="claim-column blocked-claim">
+            <h3>证据不支持</h3>
+            <ul>
+              <li>LaWAM 的提升已经归因于 inference conditioning 或 auxiliary loss。</li>
+              <li>TG1A 已经把 endpoint 语义与 scene coherence / 分布外扰动完全分离。</li>
+              <li>LMWM 无效是由 milestone 超出 action chunk 导致。</li>
+              <li>MINT-VLA 或 PredictiveActionAdapter 稳定提升了 π0.5。</li>
+              <li>一个 public system score 能识别某个 world-model 组件。</li>
+              <li>RoboTwin 六任务结论可直接推广到其他 VLA 或真实机器人。</li>
+            </ul>
+          </article>
+        </div>
+      </section>
+
+      <section class="report-section" id="limitations">
+        <p class="section-kicker">06 · Open question</p>
+        <h2 class="section-title">TG4 仍需回答来源归因</h2>
+        <div class="outcomes">
+          <article class="outcome"><h3>Clean base</h3><p>不继承 predictive pretraining 的兼容基础模型。</p></article>
+          <article class="outcome"><h3>Auxiliary only</h3><p>保留预测辅助塑形，但关闭推理 future route。</p></article>
+          <article class="outcome"><h3>Conditioning only</h3><p>保留 future route，但移除预测辅助损失。</p></article>
+          <article class="outcome"><h3>Full + null controls</h3><p>分离总效应、parameter-matched capacity 与 interaction。</p></article>
+        </div>
+        <div class="callout critical">
+          <strong>当前调度状态（06:18 UTC）：</strong>TG4 训练 6/18 已审计接纳、10 个未完成 cell 运行，另有 2 个 full cell
+          正在 post-training materialization；joint integrity、21 个 evaluation 和 hierarchical analysis 均未完成。partial checkpoint、loss curve
+          或 rollout 不能进入论文结论。canonical scheduler state 仍由后台调度器独占维护。
+        </div>
+      </section>
+
+      <section class="report-section" id="submission">
+        <p class="section-kicker">07 · Writing and submission</p>
+        <h2 class="section-title">论文重写状态</h2>
+        <div class="paper-map">
+          <div class="paper-row"><div class="paper-num">01</div><div class="paper-name">叙事重构</div><div class="paper-job">标题与主线改为 temporal contract、claim-specific tests 和三接口对照，不再以 MINT 增益为中心。</div><div class="paper-output"><span class="tag complete">complete</span></div></div>
+          <div class="paper-row"><div class="paper-num">02</div><div class="paper-name">主稿构建</div><div class="paper-job">主文 9 页，参考文献从第 10 页开始，附录从第 11 页开始；完整 PDF 17 页。</div><div class="paper-output"><span class="tag complete">complete</span></div></div>
+          <div class="paper-row"><div class="paper-num">03</div><div class="paper-name">TG4 结果</div><div class="paper-job">保留显式占位符；只有完整审计结果才能修改来源归因、摘要或标题。</div><div class="paper-output"><span class="tag running">active</span></div></div>
+          <div class="paper-row"><div class="paper-num">04</div><div class="paper-name">匿名 artifact</div><div class="paper-job">投稿前填入最终匿名 archive URL；不涉及新增实验。</div><div class="paper-output"><span class="tag blocked">external</span></div></div>
+        </div>
+      </section>
+
+      <section class="report-section" id="appendix">
+        <p class="section-kicker">Public release boundary</p>
+        <h2 class="section-title">公开发布范围</h2>
+        <p>本页公开经审计的研究问题、方法结构、对照结果与结论边界。论文草稿、写作计划、待办清单和内部证据归档不随网站发布。</p>
+      </section>
+    </main>
+  </div>
+
+  <footer class="footer">Actionable Futures evidence brief · Updated 2026-08-13 UTC</footer>
+  <script src="app.js"></script>
+</body>
+</html>
